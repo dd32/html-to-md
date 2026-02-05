@@ -108,17 +108,13 @@ class LineBuffer {
 				$was_at  = $at;
 			}
 
-			$type = $format instanceof InlineFormat_Generic ? $format->type : null;
-			switch ( $type ) {
-				case 'bolding':
-				case 'emphasizing':
-				case 'striking-out':
-					$depth = $effects[ $type ];
-					if ( ( 0 === $depth && 'entering' === $state ) || ( $depth === 1 && 'exiting' === $state ) ) {
-						$buffer .= $syntax[ $type ];
-					}
-					$effects[ $type ] += 'entering' === $state ? 1 : -1;
-					break;
+			if ( $format instanceof InlineFormat_Generic ) {
+				$type  = $format->type;
+				$depth = $effects[ $type ];
+				if ( ( 0 === $depth && 'entering' === $state ) || ( $depth === 1 && 'exiting' === $state ) ) {
+					$buffer .= $syntax[ $type ];
+				}
+				$effects[ $type ] += 'entering' === $state ? 1 : -1;
 			}
 
 			$was_at = $at;
