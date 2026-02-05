@@ -1,6 +1,7 @@
 <?php
 
 require __DIR__ . '/block.php';
+require __DIR__ . '/block-code.php';
 require __DIR__ . '/block-paragraph.php';
 require __DIR__ . '/inline-format.php';
 require __DIR__ . '/inline-format-generic.php';
@@ -16,7 +17,7 @@ require __DIR__ . '/line-buffer.php';
  */
 function html_to_md( string $html, $options ) {
 	$p  = WP_HTML_Processor::create_fragment( $html );
-	$o  = '';
+	$o  = array();
 	$b  = null;
 	$lb = new LineBuffer();
 
@@ -26,9 +27,7 @@ function html_to_md( string $html, $options ) {
 		
 		switch ( $token_name ) {
 			case '#text':
-				$chunk = $p->get_modifiable_text();
-				$chunk = preg_replace( "~[ \t\f\r\n]+~", ' ', $chunk );
-				$lb->append_text( $chunk );
+				$lb->append_text( $p->get_modifiable_text() );
 				break;
 
 			case 'B':
@@ -62,6 +61,22 @@ function html_to_md( string $html, $options ) {
 				$lb = new LineBuffer();
 				$b->append_line_buffer( $lb );
 				break;
+
+			case 'PRE':
+				if ( isset( $b ) ) {
+					$o[] = $b->flush();
+					$lb = null;
+				}
+
+				if ( $is_closer ) {
+					$b  = null;
+					$lb = null;
+				} else {
+					$b  = new Block_Code();
+					$lb = new LineBuffer();
+					$b->append_line_buffer( $lb );
+				}
+				break;
 		}
 	}
 
@@ -71,8 +86,16 @@ function html_to_md( string $html, $options ) {
 	}
 
 	if ( isset( $b ) ) {
-		$o .= $b->flush();
+		$o[] = $b->flush();
 	}
 
-	return $o;
+	$markdown = '';
+	$last     = '';
+	foreach ( $o as $i => $b ) {
+		// Ensure each block is separated by two spaces.
+		$markdown .= ( $i === 0 ? '' : ( "\n" === $last ? "\n" : "\n\n" ) ) . ltrim( $b, "\n" );
+		$last      = substr( $markdown, -1 );
+	}
+
+	return $markdown;
 }

@@ -1,6 +1,6 @@
 <?php
 
-class Block_Paragraph extends Block {
+class Block_Code extends Block {
 	private int $active_buffer = 0;
 
 	/**
@@ -13,8 +13,9 @@ class Block_Paragraph extends Block {
 	}
 
 	public function append_line_buffer( LineBuffer $buffer ) {
-		$this->lines[] = $buffer;
-		$this->active_buffer = count( $this->lines ) - 1;
+		$buffer->preserves_whitespace = true;
+		$this->lines[]                = $buffer;
+		$this->active_buffer          = count( $this->lines ) - 1;
 	}
 
 	public function active_buffer(): LineBuffer {
@@ -22,15 +23,19 @@ class Block_Paragraph extends Block {
 	}
 
 	public function flush(): string {
-		$md = array();
+		$md = '';
 		foreach ( $this->lines as $line ) {
 			if ( ! $line->has_non_whitespace_content() ) {
 				continue;
 			}
 
-			$md[] = $line->flush();
+			if ( '' !== $md ) {
+				$md .= "\n\n";
+			}
+
+			$md .= "```\n{$line->flush()}\n```\n";
 		}
 
-		return implode( "\n\n", $md );
+		return $md;
 	}
 }

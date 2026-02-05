@@ -40,6 +40,8 @@ class LineBuffer {
 
 	private array $open_formats = array();
 
+	public bool $preserves_whitespace = false;
+
 	/**
 	 * References to inline formats and their state.
 	 *
@@ -51,7 +53,7 @@ class LineBuffer {
 	private array $formats = array();
 
 	public function append_text( string $text ) {
-		$this->buffer .= $text;
+		$this->buffer .= $this->preserves_whitespace ? $text : preg_replace( "~[ \t\f\r\n]+~", ' ', $text );
 	}
 
 	public function require_format( InlineFormat $format ) {
