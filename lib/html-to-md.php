@@ -68,15 +68,14 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 			case 'PRE':
 				if ( isset( $b ) ) {
 					$o[] = $b->flush( $options );
-					$lb = null;
 				}
+
+				$lb = new LineBuffer();
 
 				if ( $is_closer ) {
 					$b  = null;
-					$lb = null;
 				} else {
 					$b  = new Block_Code();
-					$lb = new LineBuffer();
 					$b->append_line_buffer( $lb );
 				}
 				break;
