@@ -77,12 +77,14 @@ class LineBuffer {
 		$effects      = array(
 			'bolding'      => 0,
 			'emphasizing'  => 0,
+			'newlining'    => 0,
 			'quoting'      => 0,
 			'striking-out' => 0,
 		);
 		$syntax       = array(
 			'bolding'      => array( '**' ),
 			'emphasizing'  => array( '_' ),
+			'newlining'    => array( "\n" ),
 			'quoting'      => array( '“', '”', '‘', '’' ),
 			'striking-out' => array( '~' ),
 		);

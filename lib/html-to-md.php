@@ -43,6 +43,7 @@ function html_to_md( string $html, $options ) {
 				break;
 
 			case 'B':
+			case 'BR':
 			case 'EM':
 			case 'I':
 			case 'Q':
@@ -53,6 +54,7 @@ function html_to_md( string $html, $options ) {
 				} else {
 					$format = array(
 						'B'      => 'bolding',
+						'BR'     => 'newlining',
 						'EM'     => 'emphasizing',
 						'I'      => 'emphasizing',
 						'Q'      => 'quoting',
