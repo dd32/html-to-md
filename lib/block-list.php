@@ -12,8 +12,12 @@ class Block_List extends Block {
 		$this->style = $style;
 	}
 
-	public function append_item( Block $block ) {
+	public function append( Block $block ): void {
 		$this->items[] = $block;
+	}
+
+	public function append_line( LineBuffer $line ): void {
+
 	}
 
 	public function flush( MD_Options $options ): string {

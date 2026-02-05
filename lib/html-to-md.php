@@ -20,10 +20,28 @@ require __DIR__ . '/line-buffer.php';
  * @return string Input HTML rendered into Markdown
  */
 function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
-	$p  = WP_HTML_Processor::create_fragment( $html );
-	$o  = array();
-	$b  = null;
-	$lb = new LineBuffer();
+	$p            = WP_HTML_Processor::create_fragment( $html );
+	$o            = array();
+	$b            = null;
+	$lb           = new LineBuffer();
+
+	/**
+	 * Maintains track of the number of open elements in the stack
+	 * of each given type.
+	 *
+	 * @var Array<string,int> $depths
+	 */
+	$depths = array(
+		'PRE' => 0,
+		'UL'  => 0,
+	);
+
+	/**
+	 * Tracks open block containers.
+	 *
+	 * @var Array<Block>
+	 */
+	$stack = array();
 
 	while ( $p->next_token() ) {
 		$token_name = $p->get_token_name();
@@ -34,6 +52,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				$lb->append_text( $p->get_modifiable_text() );
 				break;
 
+			// Handle inline formatting.
 			case 'B':
 			case 'BR':
 			case 'EM':
@@ -57,22 +76,24 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				}
 				break;
 
-			case 'LI':
-				if ( ! $is_closer ) {
-					$bp = new Block_Paragraph();
-					$bp->append_line_buffer( $lb );
-					$b->append_item( $bp );
-					$lb = new LineBuffer();
-				}
-				break;
-
 			case 'P':
-				if ( ! isset( $b ) ) {
-					$b = new Block_Paragraph();
-				}
+				if ( $is_closer ) {
+					if ( $lb->has_non_whitespace_content() ) {
+						$stack[ count( $stack ) - 1 ]->append_line( $lb );
+					}
 
-				$lb = new LineBuffer();
-				$b->append_line_buffer( $lb );
+					$paragraph = array_pop( $stack );
+					$parent    = end( $stack );
+					if ( $parent instanceof Block ) {
+						$parent->append( $paragraph );
+					} else {
+						$o[] = $paragraph->flush( $options );
+					}
+
+					$lb = new LineBuffer();
+				} else {
+					$stack[] = new Block_Paragraph();
+				}
 				break;
 
 			case 'PRE':
@@ -124,13 +145,14 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 		}
 	}
 
-	if ( ! isset( $b ) && isset( $lb ) && $lb->has_non_whitespace_content() ) {
-		$b = new Block_Paragraph();
-		$b->append_line_buffer( $lb );
+	if ( $lb->has_non_whitespace_content() ) {
+		$paragraph = new Block_Paragraph();
+		$paragraph->append_line( $lb );
+		$o[] = $paragraph->flush( $options );
 	}
 
-	if ( isset( $b ) ) {
-		$o[] = $b->flush( $options );
+	while ( count( $stack ) > 0 ) {
+		$o[] = ( array_pop( $stack ) )->flush( $options );
 	}
 
 	$markdown = '';
