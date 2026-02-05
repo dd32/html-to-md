@@ -4,6 +4,7 @@ require __DIR__ . '/line-wrap.php';
 require __DIR__ . '/class-md-options.php';
 require __DIR__ . '/block.php';
 require __DIR__ . '/block-code.php';
+require __DIR__ . '/block-list.php';
 require __DIR__ . '/block-paragraph.php';
 require __DIR__ . '/inline-format.php';
 require __DIR__ . '/inline-format-generic.php';
@@ -56,6 +57,15 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				}
 				break;
 
+			case 'LI':
+				if ( ! $is_closer ) {
+					$bp = new Block_Paragraph();
+					$bp->append_line_buffer( $lb );
+					$b->append_item( $bp );
+					$lb = new LineBuffer();
+				}
+				break;
+
 			case 'P':
 				if ( ! isset( $b ) ) {
 					$b = new Block_Paragraph();
@@ -77,6 +87,38 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				} else {
 					$b  = new Block_Code();
 					$b->append_line_buffer( $lb );
+				}
+				break;
+
+			case 'UL':
+				if ( isset( $b ) ) {
+					$o[] = $b->flush( $options );
+				}
+
+				$lb = new LineBuffer();
+
+				$type = $p->get_attribute( 'type' );
+				$type = array(
+					'circle'   => '•',
+					'disc'     => '◦',
+					'square'   => '▪',
+					'triangle' => '‣',
+				)[ strtolower( trim( $type, " \t\f\r\n" ) ) ] ?? null;
+
+				if ( null === $type ) {
+					// @todo Track this.
+					$list_depth = 0;
+					$type       = array( '•', '◦', '▪', '‣', '⁃' )[ $list_depth % 5 ];
+				}
+
+				if ( isset( $b ) ) {
+					$o[] = $b->flush( $options );
+				}
+
+				if ( $is_closer ) {
+					$b = null;
+				} else {
+					$b = new Block_List( $type );
 				}
 				break;
 		}
