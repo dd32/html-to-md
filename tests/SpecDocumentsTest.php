@@ -31,7 +31,7 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 
 			foreach ( $dom->querySelectorAll( 'SECTION' ) as $section ) {
 				$test_name = $section->getAttribute( 'id' );
-				$test_html = $section->querySelector( 'PRE' )->textContent;
+				$test_html = $section->querySelector( 'PRE' )->innerHTML;
 				$test_md   = $section->querySelector( 'SCRIPT[type="text/x-markdown"]' )->textContent;
 
 				// While PRE removes a leading newline, SCRIPT doesn’t.
