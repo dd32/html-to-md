@@ -171,7 +171,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					}
 
 					$type  = $p->get_attribute( 'type' );
-					$type = is_string( $type ) ? strtolower( trim( $type, " \t\f\r\n" ) ) : null;
+					$type = is_string( $type ) ? strtolower( trim( $type, " \t\f\r\n" ) ) : '';
 					$style = array(
 						'circle'   => '•',
 						'disc'     => '◦',
