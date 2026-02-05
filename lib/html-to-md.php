@@ -18,27 +18,16 @@ function html_to_md( string $html, $options ) {
 	$p  = WP_HTML_Processor::create_fragment( $html );
 	$o  = '';
 	$b  = null;
-	$lb = null;
+	$lb = new LineBuffer();
 
 	while ( $p->next_token() ) {
 		$token_name = $p->get_token_name();
-		$token_type = $p->get_token_type();
 		$is_closer  = $p->is_tag_closer();
 		
 		switch ( $token_name ) {
 			case '#text':
 				$chunk = $p->get_modifiable_text();
 				$chunk = preg_replace( "~[ \t\f\r\n]+~", ' ', $chunk );
-
-				if ( ! isset( $b ) && ( ' ' === $chunk || '' === $chunk ) ) {
-					break;
-				}
-
-				if ( ! isset( $b ) ) {
-					$b = new Block_Paragraph();
-					$lb = $b->active_buffer();
-				}
-
 				$lb->append_text( $chunk );
 				break;
 
@@ -64,7 +53,21 @@ function html_to_md( string $html, $options ) {
 					$lb->require_format( new InlineFormat_Generic( $format ) );
 				}
 				break;
+
+			case 'P':
+				if ( ! isset( $b ) ) {
+					$b = new Block_Paragraph();
+				}
+
+				$lb = new LineBuffer();
+				$b->append_line_buffer( $lb );
+				break;
 		}
+	}
+
+	if ( ! isset( $b ) && isset( $lb ) ) {
+		$b = new Block_Paragraph();
+		$b->append_line_buffer( $lb );
 	}
 
 	if ( isset( $b ) ) {

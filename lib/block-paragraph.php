@@ -9,7 +9,7 @@ class Block_Paragraph extends Block {
 	public array $lines = array();
 
 	public function __construct() {
-		$this->append_line_buffer( new LineBuffer() );
+
 	}
 
 	public function append_line_buffer( LineBuffer $buffer ) {
@@ -22,6 +22,19 @@ class Block_Paragraph extends Block {
 	}
 
 	public function flush(): string {
-		return implode( "\n\n", array_map( fn ( $line ) => $line->flush(), $this->lines ) );
+		$md = '';
+		foreach ( $this->lines as $line ) {
+			if ( ! $line->has_non_whitespace_content() ) {
+				continue;
+			}
+
+			if ( '' !== $md ) {
+				$md .= "\n\n";
+			}
+
+			$md .= $line->flush();
+		}
+
+		return $md;
 	}
 }

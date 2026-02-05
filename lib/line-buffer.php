@@ -135,4 +135,8 @@ class LineBuffer {
 
 		return $buffer;
 	}
+
+	public function has_non_whitespace_content(): bool {
+		return strspn( $this->buffer, " \t\f" ) !== strlen( $this->buffer );
+	}
 }
