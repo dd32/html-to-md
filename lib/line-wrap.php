@@ -1,6 +1,9 @@
 <?php
 
 function line_wrap( string $text, int $soft_limit ): array {
+	/** Tune to better align the ending edge of wrapped lines. */
+	$fractional_soft_limit_ratio = 0.4;
+
 	$bi          = IntlBreakIterator::createWordInstance( locale_get_default() );
 	$pi          = $bi->getPartsIterator();
 	$lines       = array();
@@ -10,9 +13,9 @@ function line_wrap( string $text, int $soft_limit ): array {
 	$bi->setText( $text );
 
 	foreach ( $pi as $part ) {
-		$offset      = $bi->current();
-		$chunk_width = mb_strwidth( $part );
-		$next_width  = $line_length + $chunk_width;
+		$offset          = $bi->current();
+		$chunk_width     = mb_strwidth( $part );
+		$width_remaining = $soft_limit - $line_length;
 
 		// Add trailing non-word content to the previous line.
 		if (
@@ -26,8 +29,14 @@ function line_wrap( string $text, int $soft_limit ): array {
 			continue;
 		}
 
-		if ( $next_width < $soft_limit ) {
+		if ( $chunk_width < $width_remaining ) {
 			// Is this faster from OOP/speculation than `= $next_width`?
+			$line_length += $chunk_width;
+			continue;
+		}
+
+		// If it sticks out a little, append it, otherwise start a new line.
+		if ( ( $chunk_width / $width_remaining ) < $fractional_soft_limit_ratio ) {
 			$line_length += $chunk_width;
 			continue;
 		}
