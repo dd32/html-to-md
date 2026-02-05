@@ -74,9 +74,21 @@ class LineBuffer {
 		$was_at       = 0;
 		$buffer       = '';
 		$length       = strlen( $this->buffer );
-		$bolding      = 0;
-		$emphasizing  = 0;
-		$striking_out = 0;
+		$effects      = array(
+			'bolding'      => 0,
+			'emphasizing'  => 0,
+			'striking-out' => 0,
+		);
+		$syntax       = array(
+			'bolding'      => '**',
+			'emphasizing'  => '_',
+			'striking-out' => '~',
+		);
+		$replacements = array(
+			'bolding'      => array( '*' => '\*' ),
+			'emphasizing'  => array( '_' => '\_' ),
+			'striking-out' => array( '~' => '\~' ),
+		);
 
 		for ( $i = 0; $i < count( $offsets ); $i++ ) {
 			$at     = $offsets[ $i ];
@@ -87,9 +99,11 @@ class LineBuffer {
 
 			if ( $at > $was_at ) {
 				$chunk   = substr( $this->buffer, $was_at, $at - $was_at );
-				$chunk   = $bolding > 0 ? strtr( $chunk, array( '*' => '\*' ) ) : $chunk;
-				$chunk   = $emphasizing > 0 ? strtr( $chunk, array( '_' => '\_' ) ) : $chunk;
-				$chunk   = $striking_out > 0 ? strtr( $chunk, array( '~' => '\~' ) ) : $chunk;
+				foreach ( $effects as $effect => $depth ) {
+					if ( $depth > 0 ) {
+						$chunk = strtr( $chunk, $replacements[ $effect ] );
+					}
+				}
 				$buffer .= $chunk;
 				$was_at  = $at;
 			}
@@ -97,24 +111,13 @@ class LineBuffer {
 			$type = $format instanceof InlineFormat_Generic ? $format->type : null;
 			switch ( $type ) {
 				case 'bolding':
-					if ( ( 0 === $bolding && 'entering' === $state ) || ( $bolding > 0 && 'exiting' === $state ) ) {
-						$buffer .= '**';
-					}
-					$bolding += 'entering' === $state ? 1 : -1;
-					break;
-
 				case 'emphasizing':
-					if ( ( 0 === $emphasizing && 'entering' === $state ) || ( $emphasizing > 0 && 'exiting' === $state ) ) {
-						$buffer .= '_';
-					}
-					$emphasizing += 'entering' === $state ? 1 : -1;
-					break;
-
 				case 'striking-out':
-					if ( ( 0 === $striking_out && 'entering' === $state ) || ( $striking_out > 0 && 'exiting' === $state ) ) {
-						$buffer .= '~';
+					$depth = $effects[ $type ];
+					if ( ( 0 === $depth && 'entering' === $state ) || ( $depth === 1 && 'exiting' === $state ) ) {
+						$buffer .= $syntax[ $type ];
 					}
-					$striking_out += 'entering' === $state ? 1 : -1;
+					$effects[ $type ] += 'entering' === $state ? 1 : -1;
 					break;
 			}
 
