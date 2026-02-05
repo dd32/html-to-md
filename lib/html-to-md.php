@@ -45,6 +45,7 @@ function html_to_md( string $html, $options ) {
 			case 'B':
 			case 'EM':
 			case 'I':
+			case 'Q':
 			case 'S':
 			case 'STRONG':
 				if ( $is_closer ) {
@@ -54,6 +55,7 @@ function html_to_md( string $html, $options ) {
 						'B'      => 'bolding',
 						'EM'     => 'emphasizing',
 						'I'      => 'emphasizing',
+						'Q'      => 'quoting',
 						'S'      => 'striking-out',
 						'STRONG' => 'bolding',
 					)[ $token_name ];

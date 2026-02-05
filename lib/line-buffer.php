@@ -77,12 +77,14 @@ class LineBuffer {
 		$effects      = array(
 			'bolding'      => 0,
 			'emphasizing'  => 0,
+			'quoting'      => 0,
 			'striking-out' => 0,
 		);
 		$syntax       = array(
-			'bolding'      => '**',
-			'emphasizing'  => '_',
-			'striking-out' => '~',
+			'bolding'      => array( '**' ),
+			'emphasizing'  => array( '_' ),
+			'quoting'      => array( '“', '”', '‘', '’' ),
+			'striking-out' => array( '~' ),
 		);
 		$replacements = array(
 			'bolding'      => array( '*' => '\*' ),
@@ -100,7 +102,7 @@ class LineBuffer {
 			if ( $at > $was_at ) {
 				$chunk   = substr( $this->buffer, $was_at, $at - $was_at );
 				foreach ( $effects as $effect => $depth ) {
-					if ( $depth > 0 ) {
+					if ( $depth > 0 && isset( $replacements[ $effect ] ) ) {
 						$chunk = strtr( $chunk, $replacements[ $effect ] );
 					}
 				}
@@ -111,9 +113,14 @@ class LineBuffer {
 			if ( $format instanceof InlineFormat_Generic ) {
 				$type  = $format->type;
 				$depth = $effects[ $type ];
-				if ( ( 0 === $depth && 'entering' === $state ) || ( $depth === 1 && 'exiting' === $state ) ) {
-					$buffer .= $syntax[ $type ];
+
+				if ( 'quoting' === $type ) {
+					$quote   = 'entering' === $state ? ( $depth * 2 ) : ( ( $depth - 1 ) * 2 + 1 );
+					$buffer .= $syntax['quoting'][ $quote % 4 ];
+				} elseif ( ( 0 === $depth && 'entering' === $state ) || ( $depth === 1 && 'exiting' === $state ) ) {
+					$buffer .= $syntax[ $type ][0];
 				}
+
 				$effects[ $type ] += 'entering' === $state ? 1 : -1;
 			}
 
