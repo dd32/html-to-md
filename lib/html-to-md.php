@@ -82,7 +82,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				break;
 
 			case 'LI':
-				if ( $is_closing ) {
+				if ( $is_closer ) {
 					break;
 				}
 
