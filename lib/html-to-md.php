@@ -49,7 +49,13 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 		
 		switch ( $token_name ) {
 			case '#text':
-				$lb->append_text( $p->get_modifiable_text() );
+				$preserve_whitespace = $depths['PRE'] > 0;
+				$chunk               = $p->get_modifiable_text();
+				$chunk = $preserve_whitespace
+					? $chunk
+					: preg_replace( '~[ \t\f\r\n]+~', ' ', $chunk );
+
+				$lb->append_text( $chunk );
 				break;
 
 			// Handle inline formatting.
@@ -97,18 +103,24 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				break;
 
 			case 'PRE':
-				if ( isset( $b ) ) {
-					$o[] = $b->flush( $options );
-				}
-
-				$lb = new LineBuffer();
-
 				if ( $is_closer ) {
-					$b  = null;
+					if ( $lb->has_non_whitespace_content() ) {
+						end( $stack )->append_line( $lb );
+					}
+
+					$code   = array_pop( $stack );
+					$parent = end( $stack );
+					if ( $parent instanceof Block ) {
+						$parent->append( $code );
+					} else {
+						$o[] = $code->flush( $options );
+					}
+
+					$lb = new LineBuffer();
 				} else {
-					$b  = new Block_Code();
-					$b->append_line_buffer( $lb );
+					$stack[] = new Block_Code();
 				}
+				$depths['PRE'] += $is_closer ? -1 : 1;
 				break;
 
 			case 'UL':
