@@ -22,7 +22,7 @@ class Block_Code extends Block {
 		return $this->lines[ $this->active_buffer ];
 	}
 
-	public function flush(): string {
+	public function flush( MD_Options $options ): string {
 		$md = '';
 		foreach ( $this->lines as $line ) {
 			if ( ! $line->has_non_whitespace_content() ) {

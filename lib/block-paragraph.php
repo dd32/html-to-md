@@ -21,14 +21,14 @@ class Block_Paragraph extends Block {
 		return $this->lines[ $this->active_buffer ];
 	}
 
-	public function flush(): string {
+	public function flush( MD_Options $options ): string {
 		$md = array();
 		foreach ( $this->lines as $line ) {
 			if ( ! $line->has_non_whitespace_content() ) {
 				continue;
 			}
 
-			$md[] = $line->flush();
+			$md[] = implode( "\n", line_wrap( $line->flush(), $options->soft_line_wrap ) );
 		}
 
 		return implode( "\n\n", $md );

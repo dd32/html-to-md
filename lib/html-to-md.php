@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/line-wrap.php';
+require __DIR__ . '/class-md-options.php';
 require __DIR__ . '/block.php';
 require __DIR__ . '/block-code.php';
 require __DIR__ . '/block-paragraph.php';
@@ -11,11 +13,12 @@ require __DIR__ . '/line-buffer.php';
 /**
  * Render an HTML document into Markdown.
  *
- * @param string $html    Input HTML to render.
- * @param null   $options No options supported yet.
+ * @param string      $html    Input HTML to render.
+ * @param ?MD_Options $options Optional. Pass to specify rendering options.
+ *                             For defaults {@see MD_Options}.
  * @return string Input HTML rendered into Markdown
  */
-function html_to_md( string $html, $options ) {
+function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	$p  = WP_HTML_Processor::create_fragment( $html );
 	$o  = array();
 	$b  = null;
@@ -64,7 +67,7 @@ function html_to_md( string $html, $options ) {
 
 			case 'PRE':
 				if ( isset( $b ) ) {
-					$o[] = $b->flush();
+					$o[] = $b->flush( $options );
 					$lb = null;
 				}
 
@@ -86,7 +89,7 @@ function html_to_md( string $html, $options ) {
 	}
 
 	if ( isset( $b ) ) {
-		$o[] = $b->flush();
+		$o[] = $b->flush( $options );
 	}
 
 	$markdown = '';

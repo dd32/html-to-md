@@ -9,14 +9,27 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 	 *
 	 * @param string $html     Input HTML to render.
 	 * @param string $markdown Expected Markdown output.
-	 * @param null   $settings Conversion settings, if provided.
+	 * @param null   $options  Conversion settings, if provided.
 	 */
 	#[DataProvider('data_spec_documents')]
-	public function test_matches_spec_documents( $html, $markdown, $settings ) {
+	public function test_matches_spec_documents( $html, $markdown, $options ) {
 		$this->assertSame(
-			$markdown,
-			html_to_md( $html, $settings )
+			self::visualize_invisibles( $markdown ),
+			self::visualize_invisibles( isset( $options )
+				? html_to_md( $html, $options )
+				: html_to_md( $html ) )
 		);
+	}
+
+	public static function visualize_invisibles( string $text ): string {
+		return $text;
+
+		$replacements = array();
+		for ( $i = 0; $i <= 0x20; $i++ ) {
+			$replacements[ chr( $i ) ] = mb_chr( $i + 0x2400 );
+		}
+
+		return strtr( $text, $replacements );
 	}
 
 	/**
@@ -30,6 +43,20 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 			$dom = \DOM\HTMLDocument::createFromString( $full_html, LIBXML_NOERROR | LIBXML_HTML_NOIMPLIED );
 
 			foreach ( $dom->querySelectorAll( 'SECTION' ) as $section ) {
+				if ( null !== $section->querySelector( 'META' ) ) {
+					$options = new MD_Options();
+					if ( null !== ( $meta = $section->querySelector( 'META[name=soft-line-wrap]' ) ) ) {
+						$soft_limit = $meta->getAttribute( 'content' );
+						self::assertTrue(
+							ctype_digit( $soft_limit ),
+							"Configured soft line wrap value of '{$soft_limit}' must be all digits: check test fixture."
+						);
+						$options->soft_line_wrap = (int) $soft_limit;
+					}
+				} else {
+					$options = null;
+				}
+
 				$test_name = $section->getAttribute( 'id' );
 				$test_html = $section->querySelector( 'PRE' )->innerHTML;
 				$test_md   = $section->querySelector( 'SCRIPT[type="text/x-markdown"]' )->textContent;
@@ -39,7 +66,7 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 					$test_md = substr( $test_md, 1 );
 				}
 
-				yield $test_name => array( $test_html, $test_md, null );
+				yield $test_name => array( $test_html, $test_md, $options );
 			}
 		}
 	}
