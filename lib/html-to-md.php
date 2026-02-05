@@ -81,6 +81,17 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				}
 				break;
 
+			case 'LI':
+				if ( $is_closing ) {
+					break;
+				}
+
+				if ( ! $line_buffer->has_non_whitespace_content() ) {
+					$line_buffer = new LineBuffer();
+				}
+
+				break;
+
 			case 'P':
 				if ( $is_closer ) {
 					if ( $line_buffer->has_non_whitespace_content() ) {
@@ -97,6 +108,9 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 
 					$line_buffer = new LineBuffer();
 				} else {
+					if ( ! $line_buffer->has_non_whitespace_content() ) {
+						$line_buffer = new LineBuffer();
+					}
 					$stack[] = new Block_Paragraph();
 				}
 				break;
@@ -117,6 +131,9 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 
 					$line_buffer = new LineBuffer();
 				} else {
+					if ( ! $line_buffer->has_non_whitespace_content() ) {
+						$line_buffer = new LineBuffer();
+					}
 					$stack[] = new Block_Code();
 				}
 				$depths['PRE'] += $is_closer ? -1 : 1;
@@ -132,10 +149,15 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 							$item = array_pop( $stack );
 						}
 
-						end( $stack )->append( $block );
+						end( $stack )->append( $item );
 					}
 
-					$list   = array_pop( $stack );
+					$line_buffer = new LineBuffer();
+					$list        = array_pop( $stack );
+					if ( $list->is_empty() ) {
+						break;
+					}
+
 					$parent = end( $stack );
 					if ( $parent instanceof Block ) {
 						$parent->append( $list );
@@ -143,8 +165,11 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 						$blocks[] = $list->flush( $options );
 					}
 
-					$line_buffer = new LineBuffer();
 				} else {
+					if ( ! $line_buffer->has_non_whitespace_content() ) {
+						$line_buffer = new LineBuffer();
+					}
+
 					$type  = $p->get_attribute( 'type' );
 					$type = is_string( $type ) ? strtolower( trim( $type, " \t\f\r\n" ) ) : null;
 					$style = array(
