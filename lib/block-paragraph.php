@@ -22,4 +22,14 @@ class Block_Paragraph extends Block {
 
 		return implode( "\n\n", $md );
 	}
+
+	public function is_empty(): bool {
+		foreach ( $this->lines as $line ) {
+			if ( ! $line->is_empty() ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 }

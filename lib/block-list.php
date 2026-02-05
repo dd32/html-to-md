@@ -39,4 +39,8 @@ class Block_List extends Block {
 
 		return implode( "\n", $md );
 	}
+
+	public function is_empty(): bool {
+		return count( $this->items ) > 0;
+	}
 }

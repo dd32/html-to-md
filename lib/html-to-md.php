@@ -20,10 +20,9 @@ require __DIR__ . '/line-buffer.php';
  * @return string Input HTML rendered into Markdown
  */
 function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
-	$p            = WP_HTML_Processor::create_fragment( $html );
-	$o            = array();
-	$b            = null;
-	$lb           = new LineBuffer();
+	$p           = WP_HTML_Processor::create_fragment( $html );
+	$blocks      = array();
+	$line_buffer = new LineBuffer();
 
 	/**
 	 * Maintains track of the number of open elements in the stack
@@ -55,7 +54,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					? $chunk
 					: preg_replace( '~[ \t\f\r\n]+~', ' ', $chunk );
 
-				$lb->append_text( $chunk );
+				$line_buffer->append_text( $chunk );
 				break;
 
 			// Handle inline formatting.
@@ -67,7 +66,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 			case 'S':
 			case 'STRONG':
 				if ( $is_closer ) {
-					$lb->release_format();
+					$line_buffer->release_format();
 				} else {
 					$format = array(
 						'B'      => 'bolding',
@@ -78,14 +77,14 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 						'S'      => 'striking-out',
 						'STRONG' => 'bolding',
 					)[ $token_name ];
-					$lb->require_format( new InlineFormat_Generic( $format ) );
+					$line_buffer->require_format( new InlineFormat_Generic( $format ) );
 				}
 				break;
 
 			case 'P':
 				if ( $is_closer ) {
-					if ( $lb->has_non_whitespace_content() ) {
-						end( $stack )->append_line( $lb );
+					if ( $line_buffer->has_non_whitespace_content() ) {
+						end( $stack )->append_line( $line_buffer );
 					}
 
 					$paragraph = array_pop( $stack );
@@ -93,10 +92,10 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					if ( $parent instanceof Block ) {
 						$parent->append( $paragraph );
 					} else {
-						$o[] = $paragraph->flush( $options );
+						$blocks[] = $paragraph->flush( $options );
 					}
 
-					$lb = new LineBuffer();
+					$line_buffer = new LineBuffer();
 				} else {
 					$stack[] = new Block_Paragraph();
 				}
@@ -104,8 +103,8 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 
 			case 'PRE':
 				if ( $is_closer ) {
-					if ( $lb->has_non_whitespace_content() ) {
-						end( $stack )->append_line( $lb );
+					if ( $line_buffer->has_non_whitespace_content() ) {
+						end( $stack )->append_line( $line_buffer );
 					}
 
 					$code   = array_pop( $stack );
@@ -113,10 +112,10 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					if ( $parent instanceof Block ) {
 						$parent->append( $code );
 					} else {
-						$o[] = $code->flush( $options );
+						$blocks[] = $code->flush( $options );
 					}
 
-					$lb = new LineBuffer();
+					$line_buffer = new LineBuffer();
 				} else {
 					$stack[] = new Block_Code();
 				}
@@ -124,52 +123,58 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				break;
 
 			case 'UL':
-				if ( isset( $b ) ) {
-					$o[] = $b->flush( $options );
-				}
-
-				$lb = new LineBuffer();
-
-				$type = $p->get_attribute( 'type' );
-				$type = array(
-					'circle'   => '•',
-					'disc'     => '◦',
-					'square'   => '▪',
-					'triangle' => '‣',
-				)[ strtolower( trim( $type, " \t\f\r\n" ) ) ] ?? null;
-
-				if ( null === $type ) {
-					// @todo Track this.
-					$list_depth = 0;
-					$type       = array( '•', '◦', '▪', '‣', '⁃' )[ $list_depth % 5 ];
-				}
-
-				if ( isset( $b ) ) {
-					$o[] = $b->flush( $options );
-				}
-
 				if ( $is_closer ) {
-					$b = null;
+					if ( $line_buffer->has_non_whitespace_content() ) {
+						if ( end( $stack ) instanceof Block_List ) {
+							$item = new Block_Paragraph();
+							$item->append_line( $line_buffer );
+						} else {
+							$item = array_pop( $stack );
+						}
+
+						end( $stack )->append( $block );
+					}
+
+					$list   = array_pop( $stack );
+					$parent = end( $stack );
+					if ( $parent instanceof Block ) {
+						$parent->append( $list );
+					} else {
+						$blocks[] = $list->flush( $options );
+					}
+
+					$line_buffer = new LineBuffer();
 				} else {
-					$b = new Block_List( $type );
+					$type  = $p->get_attribute( 'type' );
+					$type = is_string( $type ) ? strtolower( trim( $type, " \t\f\r\n" ) ) : null;
+					$style = array(
+						'circle'   => '•',
+						'disc'     => '◦',
+						'square'   => '▪',
+						'triangle' => '‣',
+					)[ $type ] ?? null;
+					$style = $style ?? array( '•', '◦', '▪', '▴', '⁃' )[ $depths['UL'] % 5 ];
+
+					$stack[] = new Block_List( $style );
 				}
+				$depths['UL'] += $is_closer ? -1 : 1;
 				break;
 		}
 	}
 
-	if ( $lb->has_non_whitespace_content() ) {
+	if ( $line_buffer->has_non_whitespace_content() ) {
 		$paragraph = new Block_Paragraph();
-		$paragraph->append_line( $lb );
-		$o[] = $paragraph->flush( $options );
+		$paragraph->append_line( $line_buffer );
+		$blocks[] = $paragraph->flush( $options );
 	}
 
 	while ( count( $stack ) > 0 ) {
-		$o[] = ( array_pop( $stack ) )->flush( $options );
+		$blocks[] = ( array_pop( $stack ) )->flush( $options );
 	}
 
 	$markdown = '';
 	$last     = '';
-	foreach ( $o as $i => $b ) {
+	foreach ( $blocks as $i => $b ) {
 		// Ensure each block is separated by two spaces.
 		$markdown .= ( $i === 0 ? '' : ( "\n" === $last ? "\n" : "\n\n" ) ) . ltrim( $b, "\n" );
 		$last      = substr( $markdown, -1 );

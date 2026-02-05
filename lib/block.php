@@ -9,4 +9,6 @@ abstract class Block {
 	}
 
 	abstract public function flush( MD_Options $options ): string;
+
+	abstract public function is_empty(): bool;
 }

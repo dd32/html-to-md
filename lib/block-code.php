@@ -14,4 +14,8 @@ class Block_Code extends Block {
 
 		return "```\n{$this->code->flush()}\n```\n";
 	}
+
+	public function is_empty(): bool {
+		return $this->code->is_empty();
+	}
 }
