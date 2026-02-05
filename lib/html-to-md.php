@@ -79,7 +79,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 			case 'P':
 				if ( $is_closer ) {
 					if ( $lb->has_non_whitespace_content() ) {
-						$stack[ count( $stack ) - 1 ]->append_line( $lb );
+						end( $stack )->append_line( $lb );
 					}
 
 					$paragraph = array_pop( $stack );
