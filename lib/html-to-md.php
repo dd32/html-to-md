@@ -82,7 +82,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 		}
 	}
 
-	if ( ! isset( $b ) && isset( $lb ) ) {
+	if ( ! isset( $b ) && isset( $lb ) && $lb->has_non_whitespace_content() ) {
 		$b = new Block_Paragraph();
 		$b->append_line_buffer( $lb );
 	}
