@@ -2,4 +2,6 @@
 
 class MD_Options {
 	public int $soft_line_wrap = 80;
+
+	public array $indent = array();
 }

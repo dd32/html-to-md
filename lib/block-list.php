@@ -19,16 +19,23 @@ class Block_List extends Block {
 	public function flush( MD_Options $options ): string {
 		$md           = array();
 		$bullet       = $this->style;
-		$prefix       = " {$bullet} ";
-		$prefix_width = mb_strwidth( $prefix );
+		$indent       = implode( '', $options->indent );
+		$indent_width = mb_strwidth( $indent );
+		$prefix1      = "{$indent} {$bullet} ";
+		$prefixN      = "{$indent} " . str_repeat( ' ', mb_strwidth( $bullet ) ) . ' ';
+		$prefix_width = mb_strwidth( $prefix1 );
 
 		$soft_limit = $options->soft_line_wrap;
 		$options->soft_line_wrap -= $prefix_width;
 
 		foreach ( $this->items as $item ) {
-			$chunk = "{$prefix}{$item->flush( $options )}";
+			$buffer = '';
 
-			$md[] = $chunk;
+			foreach ( explode( "\n", $item->flush( $options ) ) as $i => $line ) {
+				$buffer .= $i === 0 ? "{$prefix1}{$line}\n" : "{$prefixN}{$line}\n";
+			}
+
+			$md[] = rtrim( $buffer, "\n" );
 		}
 
 		$options->soft_line_wrap = $soft_limit;

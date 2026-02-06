@@ -12,7 +12,19 @@ class Block_Code extends Block {
 			return '';
 		}
 
-		return "```\n{$this->code->flush()}\n```\n";
+		$indent                  = implode( '', $options->indent );
+		$indent_length           = mb_strwidth( $indent );
+		$soft_limit              = $options->soft_line_wrap;
+		$options->soft_line_wrap = max( 1, $soft_limit - $indent_length );
+
+		$buffer = "{$indent}```\n";
+		foreach ( explode( "\n", $this->code->flush() ) as $line ) {
+			$buffer .= "{$indent}{$line}\n";
+		}
+		$buffer .= "{$indent}```\n";
+
+		$options->soft_line_wrap = $soft_limit;
+		return $buffer;
 	}
 
 	public function is_empty(): bool {
