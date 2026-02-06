@@ -1,0 +1,18 @@
+<section id="hidden attribute, boolean">
+	<pre>Dennis<aside hidden>Dennis is @dmsnell</aside> wrote a test.</pre>
+	<script type="text/x-markdown">Dennis wrote a test.</script>
+</section>
+
+<section id="hidden attribute, 'until-found'">
+<!--
+Hidden-until-found is a visual hiding of content, but not meant
+to remove the content from the accessibility tree or from readers.
+-->
+<pre>Dennis<aside hidden=until-found>Dennis is @dmsnell</aside> wrote a test.</pre>
+<script type="text/x-markdown">
+Dennis
+
+Dennis is @dmsnell
+
+ wrote a test.</script>
+</section>

@@ -59,9 +59,32 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 		$line_buffer = new LineBuffer();
 	};
 
+	$skip_hidden_content = function () use ( $p ) {
+		$hidden = $p->get_attribute( 'hidden' );
+		if (
+			isset( $hidden ) &&
+			! ( is_string( $hidden ) && 0 === strcasecmp( $hidden, 'until-found' ) )
+		) {
+			goto skip;
+		}
+
+		return false;
+
+		skip:
+		$depth = $p->get_current_depth();
+		while ( $p->next_token() && $depth <= $p->get_current_depth() ) {
+			continue;
+		}
+		return true;
+	};
+
 	while ( $p->next_token() ) {
 		$token_name = $p->get_token_name();
 		$is_closer  = $p->is_tag_closer();
+
+		if ( $skip_hidden_content() ) {
+			continue;
+		}
 		
 		switch ( $token_name ) {
 			case '#text':
