@@ -7,6 +7,15 @@ class Block_Code extends Block {
 		$this->code = $line;
 	}
 
+	public function append( Block $block ): void {
+		if ( $block instanceof Block_Paragraph ) {
+			$this->code = $block->lines[0] ?? null;
+		} else {
+			$type = strtr( get_class( $block ), array( 'Block_' => '' ) );
+			throw new Error( "Cannot add block of type '{$type}' to code block." );
+		}
+	}
+
 	public function flush( MD_Options $options ): string {
 		if ( ! isset( $this->code ) || $this->code->is_empty() ) {
 			return '';
