@@ -1,41 +1,21 @@
 <?php
 
 class Block_Code extends Block {
-	private int $active_buffer = 0;
+	public ?LineBuffer $code = null;
 
-	/**
-	 * @var Array<LineBuffer>
-	 */
-	public array $lines = array();
-
-	public function __construct() {
-
-	}
-
-	public function append_line_buffer( LineBuffer $buffer ) {
-		$buffer->preserves_whitespace = true;
-		$this->lines[]                = $buffer;
-		$this->active_buffer          = count( $this->lines ) - 1;
-	}
-
-	public function active_buffer(): LineBuffer {
-		return $this->lines[ $this->active_buffer ];
+	public function append_line( LineBuffer $line ): void {
+		$this->code = $line;
 	}
 
 	public function flush( MD_Options $options ): string {
-		$md = '';
-		foreach ( $this->lines as $line ) {
-			if ( ! $line->has_non_whitespace_content() ) {
-				continue;
-			}
-
-			if ( '' !== $md ) {
-				$md .= "\n\n";
-			}
-
-			$md .= "```\n{$line->flush()}\n```\n";
+		if ( ! isset( $this->code ) || $this->code->is_empty() ) {
+			return '';
 		}
 
-		return $md;
+		return "```\n{$this->code->flush()}\n```\n";
+	}
+
+	public function is_empty(): bool {
+		return $this->code->is_empty();
 	}
 }
