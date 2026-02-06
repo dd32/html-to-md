@@ -67,6 +67,10 @@ class LineBuffer {
 		$this->format_indices[] = array_pop( $this->open_formats );
 	}
 
+	public function raw_buffer(): string {
+		return $this->buffer;
+	}
+
 	public function flush(): string {
 		$offsets      = $this->format_offsets;
 		$indices      = $this->format_indices;
@@ -112,7 +116,6 @@ class LineBuffer {
 					}
 				}
 				$buffer .= $chunk;
-				$was_at  = $at;
 			}
 
 			if ( $format instanceof InlineFormat_Generic ) {

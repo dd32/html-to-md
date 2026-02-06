@@ -18,7 +18,7 @@ class Block_Code extends Block {
 		$options->soft_line_wrap = max( 1, $soft_limit - $indent_length );
 
 		$buffer = "{$indent}```\n";
-		foreach ( explode( "\n", $this->code->flush() ) as $line ) {
+		foreach ( explode( "\n", $this->code->raw_buffer() ) as $line ) {
 			$buffer .= "{$indent}{$line}\n";
 		}
 		$buffer .= "{$indent}```\n";

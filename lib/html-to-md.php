@@ -42,25 +42,6 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	 */
 	$stack = array();
 
-	$flush_text = function () use ( $stack, &$line_buffer, &$blocks, $options ) {
-		if ( $line_buffer->is_empty() ) {
-			$line_buffer = new LineBuffer();
-			return;
-		}
-
-		$block = end( $stack );
-
-		if ( $block instanceof Block ) {
-			$block->append_line( $line_buffer );
-		} else {
-			$paragraph = new Block_Paragraph();
-			$paragraph->append_line( $line_buffer );
-			$blocks[] = $paragraph->flush( $options );
-		}
-
-		$line_buffer = new LineBuffer();
-	};
-
 	while ( $p->next_token() ) {
 		$token_name = $p->get_token_name();
 		$is_closer  = $p->is_tag_closer();
@@ -162,6 +143,11 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				} else {
 					if ( ! $line_buffer->has_non_whitespace_content() ) {
 						$line_buffer = new LineBuffer();
+					}
+					if ( ! $line_buffer->is_empty() ) {
+						if ( end( $stack ) instanceof Block ) {
+							end( $stack )->append_line( $line_buffer );
+						}
 					}
 					$stack[] = new Block_Code();
 				}
