@@ -4,6 +4,7 @@ require __DIR__ . '/line-wrap.php';
 require __DIR__ . '/class-md-options.php';
 require __DIR__ . '/block.php';
 require __DIR__ . '/block-atx.php';
+require __DIR__ . '/block-blockquote.php';
 require __DIR__ . '/block-code.php';
 require __DIR__ . '/block-list.php';
 require __DIR__ . '/block-paragraph.php';
@@ -141,6 +142,26 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				}
 				break;
 
+			case 'BLOCKQUOTE':
+				$close_a_paragraph();
+
+				if ( $is_closer ) {
+					$blockquote = array_pop( $stack );
+					if ( $blockquote->is_empty() ) {
+						break;
+					}
+
+					$parent = end( $stack );
+					if ( $parent instanceof Block ) {
+						$parent->append( $blockquote );
+					} else {
+						$blocks[] = $blockquote->flush( $options );
+					}
+				} else {
+					$stack[] = new Block_Blockquote();
+				}
+				break;
+
 			case 'H1':
 			case 'H2':
 			case 'H3':
@@ -225,7 +246,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				break;
 
 			case 'UL':
-				$close_a_paragraph( $token_name, $is_closer );
+				$close_a_paragraph();
 
 				if ( $is_closer ) {
 					if ( $line_buffer->has_non_whitespace_content() ) {
