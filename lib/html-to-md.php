@@ -3,6 +3,7 @@
 require __DIR__ . '/line-wrap.php';
 require __DIR__ . '/class-md-options.php';
 require __DIR__ . '/block.php';
+require __DIR__ . '/block-atx.php';
 require __DIR__ . '/block-code.php';
 require __DIR__ . '/block-list.php';
 require __DIR__ . '/block-paragraph.php';
@@ -104,6 +105,29 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					)[ $token_name ];
 					$line_buffer->require_format( new InlineFormat_Generic( $format ) );
 				}
+				break;
+
+			case 'H1':
+			case 'H2':
+			case 'H3':
+			case 'H4':
+			case 'H5':
+			case 'H6':
+				$close_a_paragraph();
+
+				if ( $is_closer ) {
+					$heading = array_pop( $stack );
+					if ( end( $stack ) instanceof Block ) {
+						end( $stack )->append( $heading );
+					} else {
+						$blocks[] = $heading->flush( $options );
+					}
+				} else {
+					$heading = new Block_ATX( (int) $token_name[1] );
+					$heading->append_line( $line_buffer );
+					$stack[] = $heading;
+				}
+
 				break;
 
 			/*
