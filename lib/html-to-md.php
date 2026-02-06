@@ -81,6 +81,16 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				}
 				break;
 
+			case 'A':
+				// @todo Join with base URL of document, if available, to form URL.
+				if ( $is_closer ) {
+					$line_buffer->release_format();
+				} else {
+					$href = $p->get_attribute( 'href' );
+					$line_buffer->require_format( new InlineFormat_Link( $href ) );
+				}
+				break;
+
 			// Handle inline formatting.
 			case 'B':
 			case 'BR':

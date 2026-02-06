@@ -132,6 +132,27 @@ class LineBuffer {
 				$effects[ $type ] += 'entering' === $state ? 1 : -1;
 			}
 
+			if ( $format instanceof InlineFormat_Link ) {
+				/*
+				 * Only render absolute HTTP/S links. Any relative links
+				 * should be expanded here by now. It may be worth rendering
+				 * other special schemes, like `ftp://` and `sftp://` and
+				 * more, but this implementation is currently limited to HTTP.
+				 */
+				if (
+					! str_starts_with( $format->url, 'http://' ) &&
+					! str_starts_with( $format->url, 'https://' )
+				) {
+					continue;
+				}
+
+				if ( 'entering' === $state ) {
+					$buffer .= '[';
+				} else {
+					$buffer .= "]({$format->url})";
+				}
+			}
+
 			$was_at = $at;
 		}
 
