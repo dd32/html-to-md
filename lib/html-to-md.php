@@ -204,6 +204,11 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 
 			case 'IMG':
 				$src = $p->get_attribute( 'src' );
+				if ( ! is_string( $src ) || empty( trim( $src ) ) ) {
+					// Only consider images which contain some content.
+					break;
+				}
+
 				$alt = $p->get_attribute( 'alt' );
 				$alt = is_string( $alt ) ? $alt : '';
 				$line_buffer->require_format( new InlineFormat_Image( $src, $alt ) );
