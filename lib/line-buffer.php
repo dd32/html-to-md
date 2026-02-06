@@ -153,6 +153,14 @@ class LineBuffer {
 				}
 			}
 
+			if ( $format instanceof InlineFormat_Image ) {
+				if ( '' === $format->alt_text || 'exiting' === $state ) {
+					continue;
+				}
+
+				$buffer .= "⌊{$format->alt_text}⌉";
+			}
+
 			$was_at = $at;
 		}
 

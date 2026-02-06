@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * Represents an image, possibly with alternative text.
+ */
+class InlineFormat_Image extends InlineFormat {
+	/**
+	 * Source of the image.
+	 *
+	 * @var string
+	 */
+	public string $src_url;
+
+	/**
+	 * Alternative text for the image. Images which should
+	 * not appear in assistive translations contain the empty string.
+	 *
+	 * @var string
+	 */
+	public string $alt_text;
+
+	/**
+	 * Create a format for a linked span of content.
+	 *
+	 * @param string $src_url
+	 * @param string $alt_text
+	 */
+	public function __construct( string $src_url, string $alt_text ) {
+		$this->src_url  = $src_url;
+		$this->alt_text = $alt_text;
+	}
+}

@@ -9,6 +9,7 @@ require __DIR__ . '/block-list.php';
 require __DIR__ . '/block-paragraph.php';
 require __DIR__ . '/inline-format.php';
 require __DIR__ . '/inline-format-generic.php';
+require __DIR__ . '/inline-format-image.php';
 require __DIR__ . '/inline-format-link.php';
 require __DIR__ . '/line-buffer.php';
 
@@ -155,6 +156,14 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				$break->append_line( $line_buffer );
 				$stack[] = $break;
 				$close_a_paragraph();
+				break;
+
+			case 'IMG':
+				$src = $p->get_attribute( 'src' );
+				$alt = $p->get_attribute( 'alt' );
+				$alt = is_string( $alt ) ? $alt : '';
+				$line_buffer->require_format( new InlineFormat_Image( $src, $alt ) );
+				$line_buffer->release_format();
 				break;
 
 			case 'LI':
