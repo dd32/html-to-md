@@ -19,3 +19,25 @@
     ◦ Dogs
     ◦ Bears</script>
 </section>
+
+<section id="two sibling two-level lists">
+<pre>
+<ul>
+	<li>Animals</li>
+	<li><ul><li>Cats<li>Dogs<li>Bears</ul></li>
+	<li><ul><li>Kittens<li>Puppies<li>Cubs</ul></li>
+</ul>
+</pre>
+<!--
+The extra bullet looks strange, but separates sibling lists. Without it,
+the two second-level lists would appear as one big list of six items.
+-->
+<script type="text/x-markdown">
+ • Animals
+ •  ◦ Cats
+    ◦ Dogs
+    ◦ Bears
+ •  ◦ Kittens
+    ◦ Puppies
+    ◦ Cubs</script>
+</section>

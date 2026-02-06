@@ -42,22 +42,18 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	 */
 	$stack = array();
 
-	$flush_text = function () use ( $stack, &$line_buffer, &$blocks, $options ) {
-		if ( $line_buffer->is_empty() ) {
-			$line_buffer = new LineBuffer();
-			return;
+	$close_a_paragraph = function () use ( &$line_buffer, &$stack, $options, &$blocks ) {
+		if (
+			end( $stack ) instanceof Block_Paragraph &&
+			$line_buffer->has_non_whitespace_content()
+		) {
+			$paragraph = array_pop( $stack );
+			if ( end( $stack ) instanceof Block ) {
+				end( $stack )->append( $paragraph );
+			} else {
+				$blocks[] = $paragraph->flush( $options );
+			}
 		}
-
-		$block = end( $stack );
-
-		if ( $block instanceof Block ) {
-			$block->append_line( $line_buffer );
-		} else {
-			$paragraph = new Block_Paragraph();
-			$paragraph->append_line( $line_buffer );
-			$blocks[] = $paragraph->flush( $options );
-		}
-
 		$line_buffer = new LineBuffer();
 	};
 
@@ -74,6 +70,14 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					: preg_replace( '~[ \t\f\r\n]+~', ' ', $chunk );
 
 				$line_buffer->append_text( $chunk );
+				if (
+					! ( end( $stack ) instanceof Block_Paragraph ) &&
+					$line_buffer->has_non_whitespace_content()
+				) {
+					$paragraph = new Block_Paragraph();
+					$paragraph->append_line( $line_buffer );
+					$stack[] = $paragraph;
+				}
 				break;
 
 			// Handle inline formatting.
@@ -103,72 +107,34 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				break;
 
 			case 'LI':
-				if ( ! $line_buffer->has_non_whitespace_content() ) {
-					$line_buffer = new LineBuffer();
-				}
-
-				if ( ! ( end( $stack ) instanceof Block_List ) ) {
+				$close_a_paragraph();
+				if ( ! ( $is_closer || end( $stack ) instanceof Block_List ) ) {
 					$stack[] = new Block_List( '' );
 				}
-
-				if ( ! $line_buffer->is_empty() ) {
-					$paragraph = new Block_Paragraph();
-					$paragraph->append_line( $line_buffer );
-					end( $stack )->append( $paragraph );
-				}
-
-				$line_buffer = new LineBuffer();
-
 				break;
 
 			case 'P':
-				if ( $is_closer ) {
-					if ( $line_buffer->has_non_whitespace_content() ) {
-						end( $stack )->append_line( $line_buffer );
-					}
-
-					$paragraph = array_pop( $stack );
-					$parent    = end( $stack );
-					if ( $parent instanceof Block ) {
-						$parent->append( $paragraph );
-					} else {
-						$blocks[] = $paragraph->flush( $options );
-					}
-
-					$line_buffer = new LineBuffer();
-				} else {
-					if ( ! $line_buffer->has_non_whitespace_content() ) {
-						$line_buffer = new LineBuffer();
-					}
-					$stack[] = new Block_Paragraph();
-				}
+				$close_a_paragraph();
 				break;
 
 			case 'PRE':
+				$close_a_paragraph();
 				if ( $is_closer ) {
-					if ( $line_buffer->has_non_whitespace_content() ) {
-						end( $stack )->append_line( $line_buffer );
-					}
-
-					$code   = array_pop( $stack );
-					$parent = end( $stack );
-					if ( $parent instanceof Block ) {
-						$parent->append( $code );
+					$block = array_pop( $stack );
+					if ( end( $stack ) instanceof Block ) {
+						end( $stack )->append( $block );
 					} else {
-						$blocks[] = $code->flush( $options );
+						$blocks[] = $block->flush( $options );
 					}
-
-					$line_buffer = new LineBuffer();
 				} else {
-					if ( ! $line_buffer->has_non_whitespace_content() ) {
-						$line_buffer = new LineBuffer();
-					}
 					$stack[] = new Block_Code();
 				}
 				$depths['PRE'] += $is_closer ? -1 : 1;
 				break;
 
 			case 'UL':
+				$close_a_paragraph( $token_name, $is_closer );
+
 				if ( $is_closer ) {
 					if ( $line_buffer->has_non_whitespace_content() ) {
 						if ( end( $stack ) instanceof Block_List ) {
@@ -213,12 +179,6 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				$depths['UL'] += $is_closer ? -1 : 1;
 				break;
 		}
-	}
-
-	if ( $line_buffer->has_non_whitespace_content() ) {
-		$paragraph = new Block_Paragraph();
-		$paragraph->append_line( $line_buffer );
-		$blocks[] = $paragraph->flush( $options );
 	}
 
 	while ( count( $stack ) > 0 ) {
