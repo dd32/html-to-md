@@ -154,7 +154,16 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				}
 				break;
 
+			case 'ADDRESS':
+			case 'ARTICLE':
+			case 'ASIDE':
+			case 'DIV':
+			case 'FOOTER':
+			case 'HEADER':
+			case 'HGROUP':
+			case 'MAIN':
 			case 'P':
+			case 'SECTION':
 				$close_a_paragraph();
 				break;
 
