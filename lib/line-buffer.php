@@ -64,6 +64,8 @@ class LineBuffer {
 
 	public function release_format() {
 		$this->format_offsets[] = -strlen( $this->buffer );
+//		assert( count( $this->open_formats ) > 0 );
+		// @todo how could this be missing?
 		$this->format_indices[] = array_pop( $this->open_formats );
 	}
 
@@ -106,6 +108,12 @@ class LineBuffer {
 			$state  = $at < 0 ? 'exiting' : 'entering';
 			$at     = abs( $at );
 			$index  = $indices[ $i ];
+
+			// @todo Why is this necessary?
+			if ( ! isset( $index ) ) {
+				continue;
+			}
+
 			$format = $formats[ $index ];
 
 			if ( $at > $was_at ) {
