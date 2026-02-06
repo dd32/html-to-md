@@ -139,7 +139,7 @@ class LineBuffer {
 			$buffer .= substr( $this->buffer, $was_at );
 		}
 
-		return $buffer;
+		return rtrim( $buffer, " \t\f\r\n" );
 	}
 
 	public function is_empty(): bool {

@@ -26,14 +26,16 @@ class Block_Code extends Block {
 		$soft_limit              = $options->soft_line_wrap;
 		$options->soft_line_wrap = max( 1, $soft_limit - $indent_length );
 
-		$buffer = "{$indent}```\n";
+		$prefix = "{$indent}```\n";
+		$buffer = '';
 		foreach ( explode( "\n", $this->code->raw_buffer() ) as $line ) {
 			$buffer .= "{$indent}{$line}\n";
 		}
-		$buffer .= "{$indent}```\n";
+		$buffer = trim( $buffer, "\n" );
+		$suffix = "\n{$indent}```\n";
 
 		$options->soft_line_wrap = $soft_limit;
-		return $buffer;
+		return "{$prefix}{$buffer}{$suffix}";
 	}
 
 	public function is_empty(): bool {
