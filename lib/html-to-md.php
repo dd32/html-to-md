@@ -79,6 +79,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 			// Handle inline formatting.
 			case 'B':
 			case 'BR':
+			case 'CODE':
 			case 'EM':
 			case 'I':
 			case 'Q':
@@ -90,6 +91,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					$format = array(
 						'B'      => 'bolding',
 						'BR'     => 'newlining',
+						'CODE'   => 'monospacing',
 						'EM'     => 'emphasizing',
 						'I'      => 'emphasizing',
 						'Q'      => 'quoting',

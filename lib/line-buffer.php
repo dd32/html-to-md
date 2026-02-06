@@ -77,6 +77,7 @@ class LineBuffer {
 		$effects      = array(
 			'bolding'      => 0,
 			'emphasizing'  => 0,
+			'monospacing'  => 0,
 			'newlining'    => 0,
 			'quoting'      => 0,
 			'striking-out' => 0,
@@ -84,6 +85,7 @@ class LineBuffer {
 		$syntax       = array(
 			'bolding'      => array( '**' ),
 			'emphasizing'  => array( '_' ),
+			'monospacing'  => array( '`' ),
 			'newlining'    => array( "\n" ),
 			'quoting'      => array( '“', '”', '‘', '’' ),
 			'striking-out' => array( '~' ),
@@ -91,6 +93,7 @@ class LineBuffer {
 		$replacements = array(
 			'bolding'      => array( '*' => '\*' ),
 			'emphasizing'  => array( '_' => '\_' ),
+			'monospacing'  => array( '`' => '\`' ),
 			'striking-out' => array( '~' => '\~' ),
 		);
 
