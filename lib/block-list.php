@@ -16,10 +16,6 @@ class Block_List extends Block {
 		$this->items[] = $block;
 	}
 
-	public function append_line( LineBuffer $line ): void {
-
-	}
-
 	public function flush( MD_Options $options ): string {
 		$md           = array();
 		$bullet       = $this->style;
@@ -29,7 +25,7 @@ class Block_List extends Block {
 		$soft_limit = $options->soft_line_wrap;
 		$options->soft_line_wrap -= $prefix_width;
 
-		foreach ( $this->items as $i => $item ) {
+		foreach ( $this->items as $item ) {
 			$chunk = "{$prefix}{$item->flush( $options )}";
 
 			$md[] = $chunk;
@@ -41,6 +37,12 @@ class Block_List extends Block {
 	}
 
 	public function is_empty(): bool {
-		return count( $this->items ) > 0;
+		foreach ( $this->items as $item ) {
+			if ( ! $item->is_empty() ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

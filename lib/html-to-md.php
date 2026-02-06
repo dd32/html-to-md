@@ -164,7 +164,6 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					} else {
 						$blocks[] = $list->flush( $options );
 					}
-
 				} else {
 					if ( ! $line_buffer->has_non_whitespace_content() ) {
 						$line_buffer = new LineBuffer();
