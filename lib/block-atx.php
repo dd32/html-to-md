@@ -30,7 +30,7 @@ class Block_ATX extends Block {
 		// @todo This is a stylistic choice.
 		$heading = strtr( $this->heading->flush(), array( "\n" => "⏎ " ) );
 
-		return "{$prefix} {$heading}";
+		return "\n{$prefix} {$heading}\n";
 	}
 
 	public function is_empty(): bool {
