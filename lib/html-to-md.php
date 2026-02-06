@@ -106,6 +106,23 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				}
 				break;
 
+			/*
+			 * For simplicity’s sake, adding a thematic break is considered
+			 * equivalent here to adding a new paragraph whose contents is
+			 * the break syntax. Note that this syntax can be quite colorful
+			 * and there are other options, but three dashes are very popular
+			 * forms of the break, so will likely be among the most familiar.
+			 */
+			case 'HR':
+				$close_a_paragraph();
+				$break = new Block_Paragraph();
+				$line_buffer = new LineBuffer();
+				$line_buffer->append_text( '---' );
+				$break->append_line( $line_buffer );
+				$stack[] = $break;
+				$close_a_paragraph();
+				break;
+
 			case 'LI':
 				$close_a_paragraph();
 				if ( ! ( $is_closer || end( $stack ) instanceof Block_List ) ) {
