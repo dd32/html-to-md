@@ -20,13 +20,21 @@ class InlineFormat_Image extends InlineFormat {
 	public string $alt_text;
 
 	/**
+	 * Descriptive title to accompany image, if provided.
+	 *
+	 * @var string
+	 */
+	public string $title;
+
+	/**
 	 * Create a format for a linked span of content.
 	 *
 	 * @param string $src_url
 	 * @param string $alt_text
 	 */
-	public function __construct( string $src_url, string $alt_text ) {
+	public function __construct( string $src_url, string $alt_text, string $title = '' ) {
 		$this->src_url  = $src_url;
 		$this->alt_text = $alt_text;
+		$this->title    = $title;
 	}
 }

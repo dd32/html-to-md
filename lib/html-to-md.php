@@ -211,7 +211,11 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 
 				$alt = $p->get_attribute( 'alt' );
 				$alt = is_string( $alt ) ? $alt : '';
-				$line_buffer->require_format( new InlineFormat_Image( $src, $alt ) );
+
+				$title = $p->get_attribute( 'title' );
+				$title = is_string( $title ) ? $title : '';
+
+				$line_buffer->require_format( new InlineFormat_Image( $src, $alt, $title ) );
 				$line_buffer->release_format();
 				break;
 

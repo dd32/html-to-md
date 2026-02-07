@@ -162,6 +162,24 @@ class LineBuffer {
 			}
 
 			if ( $format instanceof InlineFormat_Image ) {
+				/*
+				 * There’s a special case for “block images,” which comprise
+				 * the entirety of the line buffer. In these cases, the image
+				 * should behave more like a block than a format. It might be
+				 * best to handle this elsewhere, but the determination is
+				 * complex. For example, it could be the case that _any_ image
+				 * inside of a PICTURE or FIGURE element should turn into a
+				 * block image, but that information won’t be known here.
+				 */
+				if (
+					1 === count( $formats ) &&
+					'' === trim( $this->buffer, " \r\t\f\n" )
+				) {
+					return '' !== $format->title
+						? "![{$format->alt_text}]({$format->src_url} \"{$format->title}\")"
+						: "![{$format->alt_text}]({$format->src_url})";
+				}
+
 				if ( '' === $format->alt_text || 'exiting' === $state ) {
 					goto next;
 				}
@@ -185,6 +203,20 @@ class LineBuffer {
 	}
 
 	public function has_non_whitespace_content(): bool {
-		return strspn( $this->buffer, " \t\f" ) !== strlen( $this->buffer );
+		if ( strspn( $this->buffer, " \t\f" ) !== strlen( $this->buffer ) ) {
+			return true;
+		}
+
+		/*
+		 * If a line buffer comprises only an image, it is a block image
+		 * and therefore not empty in the normal sense.
+		 */
+		foreach ( $this->formats as $format ) {
+			if ( $format instanceof InlineFormat_Image ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
