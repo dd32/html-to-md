@@ -111,7 +111,7 @@ class LineBuffer {
 
 			// @todo Why is this necessary?
 			if ( ! isset( $index ) ) {
-				continue;
+				goto next;
 			}
 
 			$format = $formats[ $index ];
@@ -151,7 +151,7 @@ class LineBuffer {
 					! str_starts_with( $format->url, 'http://' ) &&
 					! str_starts_with( $format->url, 'https://' )
 				) {
-					continue;
+					goto next;
 				}
 
 				if ( 'entering' === $state ) {
@@ -163,12 +163,13 @@ class LineBuffer {
 
 			if ( $format instanceof InlineFormat_Image ) {
 				if ( '' === $format->alt_text || 'exiting' === $state ) {
-					continue;
+					goto next;
 				}
 
 				$buffer .= "⌊{$format->alt_text}⌉";
 			}
 
+			next:
 			$was_at = $at;
 		}
 
