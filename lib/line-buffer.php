@@ -149,7 +149,17 @@ class LineBuffer {
 						$buffer .= ')';
 					}
 				} elseif ( ( 0 === $depth && 'entering' === $state ) || ( $depth === 1 && 'exiting' === $state ) ) {
-					$buffer .= $syntax[ $type ][0];
+					$matching_offset = null;
+
+					for ( $k = 0; $k < count( $indices ); $k++ ) {
+						if ( $k !== $i && $indices[ $k ] === $index ) {
+							$matching_offset = $offsets[ $k ];
+						}
+					}
+
+					if ( ! isset( $matching_offset ) || abs( $matching_offset ) !== $at ) {
+						$buffer .= $syntax[ $type ][0];
+					}
 				}
 
 				$effects[ $type ] += 'entering' === $state ? 1 : -1;

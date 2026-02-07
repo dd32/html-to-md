@@ -71,6 +71,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 			case 'OPTION':
 			case 'PARAM':
 			case 'SELECT':
+			case 'SVG':
 			case 'TEMPLATE':
 			case 'TEXTAREA':
 			case 'TITLE':
@@ -128,7 +129,9 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					$line_buffer->release_format();
 				} else {
 					$href = $p->get_attribute( 'href' );
-					$line_buffer->require_format( new InlineFormat_Link( $href ) );
+					if ( is_string( $href ) ) {
+						$line_buffer->require_format( new InlineFormat_Link( $href ) );
+					}
 				}
 				break;
 
@@ -254,6 +257,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 			case 'FIGCAPTION':
 			case 'FORM':
 			case 'LEGEND':
+			case 'NAV':
 			case 'PLAINTEXT':
 			case 'SEARCH':
 			case 'SUMMARY':
