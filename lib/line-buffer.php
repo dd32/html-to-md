@@ -80,13 +80,16 @@ class LineBuffer {
 		$was_at       = 0;
 		$buffer       = '';
 		$length       = strlen( $this->buffer );
+		/** @var Array<string, int> $effects */
 		$effects      = array(
-			'bolding'      => 0,
-			'emphasizing'  => 0,
-			'monospacing'  => 0,
-			'newlining'    => 0,
-			'quoting'      => 0,
-			'striking-out' => 0,
+			'bolding'        => 0,
+			'emphasizing'    => 0,
+			'monospacing'    => 0,
+			'newlining'      => 0,
+			'quoting'        => 0,
+			'striking-out'   => 0,
+			'subscripting'   => 0,
+			'superscripting' => 0,
 		);
 		$syntax       = array(
 			'bolding'      => array( '**' ),
@@ -133,6 +136,18 @@ class LineBuffer {
 				if ( 'quoting' === $type ) {
 					$quote   = 'entering' === $state ? ( $depth * 2 ) : ( ( $depth - 1 ) * 2 + 1 );
 					$buffer .= $syntax['quoting'][ $quote % 4 ];
+				} elseif ( 'subscripting' === $type ) {
+					if ( 'entering' === $state && 0 === $depth ) {
+						$buffer .= '_(';
+					} elseif ( 'exiting' === $state && 1 === $depth) {
+						$buffer .= ')';
+					}
+				} elseif ( 'superscripting' === $type ) {
+					if ( 'entering' === $state && 0 === $depth ) {
+						$buffer .= '^(';
+					} elseif ( 'exiting' === $state && 1 === $depth) {
+						$buffer .= ')';
+					}
 				} elseif ( ( 0 === $depth && 'entering' === $state ) || ( $depth === 1 && 'exiting' === $state ) ) {
 					$buffer .= $syntax[ $type ][0];
 				}

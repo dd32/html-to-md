@@ -125,6 +125,8 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 			case 'Q':
 			case 'S':
 			case 'STRONG':
+			case 'SUB':
+			case 'SUP':
 				if ( $is_closer ) {
 					$line_buffer->release_format();
 				} else {
@@ -137,6 +139,8 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 						'Q'      => 'quoting',
 						'S'      => 'striking-out',
 						'STRONG' => 'bolding',
+						'SUB'    => 'subscripting',
+						'SUP'    => 'superscripting',
 					)[ $token_name ];
 					$line_buffer->require_format( new InlineFormat_Generic( $format ) );
 				}

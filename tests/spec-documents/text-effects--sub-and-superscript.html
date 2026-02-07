@@ -1,0 +1,30 @@
+<!--
+While there are some superscript versions of the Unicode characters, they aren’t
+all available. When a superscript span contains text without a proper transform,
+the entire superscript phrase can be surrounded in parentheses. This is not a
+perfect conversion, but a dynamically-equivalent one, hopefully. Markdown is lossy.
+
+Future expansion should perform some translation, but that requires tracking the
+superscripted spans and then replacing them after format application, which is
+beyond the scope of the initial support.
+-->
+
+<section id="superscript numbers">
+	<pre>Eggs<sup>1</sup> and Eels<sup>47</sup> and Effs<sup>x47</sup></pre>
+	<script type="text/x-markdown">Eggs^(1) and Eels^(47) and Effs^(x47)</script>
+</section>
+
+<section id="superscript letters">
+	<pre>x<sup>i</sup> = y<sup>n</sup> - 5<sup>x</sup></pre>
+	<script type="text/x-markdown">x^(i) = y^(n) - 5^(x)</script>
+</section>
+
+<section id="subscript numbers">
+	<pre>Eggs<sub>1</sub> and Eels<sub>47</sub> and Effs<sub>x47</sub></pre>
+	<script type="text/x-markdown">Eggs_(1) and Eels_(47) and Effs_(x47)</script>
+</section>
+
+<section id="subscript letters">
+	<pre>x<sub>i</sub> = y<sub>n</sub> - 5<sub>x</sub></pre>
+	<script type="text/x-markdown">x_(i) = y_(n) - 5_(x)</script>
+</section>
