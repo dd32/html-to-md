@@ -62,6 +62,21 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	};
 
 	$skip_hidden_content = function () use ( $p ) {
+		$token_name = $p->get_token_name();
+		switch ( $token_name ) {
+			case 'BUTTON':
+			case 'DATALIST':
+			case 'IFRAME':
+			case 'INPUT':
+			case 'OPTION':
+			case 'PARAM':
+			case 'SELECT':
+			case 'TEMPLATE':
+			case 'TEXTAREA':
+			case 'TITLE':
+				goto skip;
+		}
+
 		$hidden = $p->get_attribute( 'hidden' );
 		if (
 			isset( $hidden ) &&
@@ -229,6 +244,21 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				if ( ! ( $is_closer || end( $stack ) instanceof Block_List ) ) {
 					$stack[] = new Block_List( '' );
 				}
+				break;
+
+			// @todo This group all deserves special attention, to be replaced later.
+			case 'CENTER':
+			case 'DETAILS':
+			case 'DIALOG':
+			case 'FIGURE':
+			case 'FIGCAPTION':
+			case 'FORM':
+			case 'LEGEND':
+			case 'PLAINTEXT':
+			case 'SEARCH':
+			case 'SUMMARY':
+			case 'XMP':
+				$close_a_paragraph();
 				break;
 
 			case 'ADDRESS':

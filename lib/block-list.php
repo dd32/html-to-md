@@ -68,15 +68,23 @@ class Block_List extends Block {
 		$prefixN      = "{$indent} " . str_repeat( ' ', mb_strwidth( $bullet ) ) . ' ';
 		$prefix_width = mb_strwidth( $prefix1 );
 
-		$soft_limit = $options->soft_line_wrap;
+		$soft_limit               = $options->soft_line_wrap;
 		$options->soft_line_wrap -= $prefix_width;
+		$was_sublist              = false;
 
 		foreach ( $this->items as $item ) {
 			$buffer = '';
+			$is_sublist = $item instanceof Block_List;
 
 			foreach ( explode( "\n", $item->flush( $options ) ) as $i => $line ) {
-				$buffer .= $i === 0 ? "{$prefix1}{$line}\n" : "{$prefixN}{$line}\n";
+				if ( 0 === $i && $is_sublist && ! $was_sublist ) {
+					$buffer .= "{$prefixN}{$line}\n";
+				} else {
+					$buffer .= $i === 0 ? "{$prefix1}{$line}\n" : "{$prefixN}{$line}\n";
+				}
 			}
+
+			$was_sublist = $is_sublist;
 
 			$md[] = rtrim( $buffer, "\n" );
 		}
