@@ -1,0 +1,65 @@
+<section id="basic sequence">
+<pre><ol><li>Eggs<li>Milk<li>Bread</ol></pre>
+<script type="text/x-markdown">
+ 1. Eggs
+ 2. Milk
+ 3. Bread</script>
+</section>
+
+<section id="two-level sequence">
+<pre>
+<ol>
+	<li>Animals</li>
+	<li><ol><li>Cats<li>Dogs<li>Bears</ol></li>
+</ol>
+</pre>
+<script type="text/x-markdown">
+ 1. Animals
+ 2.  a. Cats
+     b. Dogs
+     c. Bears</script>
+</section>
+
+<section id="two sibling two-level sequences">
+<pre>
+<ol>
+	<li>Animals</li>
+	<li><ol><li>Cats<li>Dogs<li>Bears</ol></li>
+	<li><ol><li>Kittens<li>Puppies<li>Cubs</ol></li>
+</ol>
+</pre>
+<script type="text/x-markdown">
+ 1. Animals
+ 2.  a. Cats
+     b. Dogs
+     c. Bears
+ 3.  a. Kittens
+     b. Puppies
+     c. Cubs</script>
+</section>
+
+<section id="list starting above 1">
+<pre><ol start=5><li>sticks<li></ol></pre>
+<script type="text/x-markdown">
+ 5. sticks</script>
+</section>
+
+<section id="list starting above 1 with non-digit numbering">
+<pre><ol type=a start=5><li>sticks<li></ol></pre>
+<script type="text/x-markdown">
+ e. sticks</script>
+</section>
+
+<section id="two-level mixed-ordering list">
+<pre>
+<ul>
+	<li>Animals</li>
+	<li><ol><li>Cats<li>Dogs<li>Bears</ol></li>
+</ul>
+</pre>
+<script type="text/x-markdown">
+ • Animals
+ •  1. Cats
+    2. Dogs
+    3. Bears</script>
+</section>

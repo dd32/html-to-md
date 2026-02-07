@@ -35,6 +35,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	 */
 	$depths = array(
 		'PRE' => 0,
+		'OL'  => 0,
 		'UL'  => 0,
 	);
 
@@ -258,6 +259,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				$depths['PRE'] += $is_closer ? -1 : 1;
 				break;
 
+			case 'OL':
 			case 'UL':
 				$close_a_paragraph();
 
@@ -291,18 +293,38 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					}
 
 					$type  = $p->get_attribute( 'type' );
-					$type = is_string( $type ) ? strtolower( trim( $type, " \t\f\r\n" ) ) : '';
-					$style = array(
-						'circle'   => '•',
-						'disc'     => '◦',
-						'square'   => '▪',
-						'triangle' => '‣',
-					)[ $type ] ?? null;
-					$style = $style ?? array( '•', '◦', '▪', '▴', '⁃' )[ $depths['UL'] % 5 ];
+
+					if ( 'UL' === $token_name ) {
+						$type = is_string( $type ) ? strtolower( trim( $type, " \t\f\r\n" ) ) : '';
+						$style = array(
+							'circle'   => '•',
+							'disc'     => '◦',
+							'square'   => '▪',
+							'triangle' => '‣',
+						)[ $type ] ?? null;
+						$style = $style ?? array( '•', '◦', '▪', '▴', '⁃' )[ $depths['UL'] % 5 ];
+					} elseif ( 'OL' === $token_name ) {
+						$style = in_array( $type, [ '1', 'a', 'A', 'i', 'I' ], true )
+							? $type
+							: [ '1', 'a', 'A', 'i', 'I' ][ $depths['OL'] % 5 ];
+
+						$start = $p->get_attribute( 'start' );
+						if (
+							is_string( $start ) &&
+							strspn( $start, '0123456789' ) === strlen( $start )
+						) {
+							$start = (int) $start;
+						} else {
+							$start = 1;
+						}
+
+						// @todo this would be better communicated structurally.
+						$style = "{$style}.{$start}";
+					}
 
 					$stack[] = new Block_List( $style );
 				}
-				$depths['UL'] += $is_closer ? -1 : 1;
+				$depths[ $token_name ] += $is_closer ? -1 : 1;
 				break;
 		}
 	}
