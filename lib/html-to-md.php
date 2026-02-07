@@ -57,6 +57,14 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 			} else {
 				$blocks[] = $paragraph->flush( $options );
 			}
+		} elseif ( $line_buffer->has_non_whitespace_content() ) {
+			$paragraph = new Block_Paragraph();
+			$paragraph->append_line( $line_buffer );
+			if ( end( $stack ) instanceof Block ) {
+				end( $stack )->append( $paragraph );
+			} else {
+				$blocks[] = $paragraph->flush( $options );
+			}
 		}
 		$line_buffer = new LineBuffer();
 	};

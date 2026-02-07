@@ -224,7 +224,7 @@ class LineBuffer {
 	}
 
 	public function is_empty(): bool {
-		return '' === $this->buffer;
+		return ! $this->has_non_whitespace_content();
 	}
 
 	public function has_non_whitespace_content(): bool {
