@@ -24,9 +24,9 @@ require __DIR__ . '/line-buffer.php';
  */
 function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	$p           = WP_HTML_Processor::create_fragment( $html );
-	$blocks      = array();
 	$line_buffer = new LineBuffer();
 	$soft_limit  = $options->soft_line_wrap;
+	$markdown    = '';
 
 	/**
 	 * Maintains track of the number of open elements in the stack
@@ -47,25 +47,34 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	 */
 	$stack = array();
 
-	$close_a_paragraph = function () use ( &$line_buffer, &$stack, $options, &$blocks ) {
+	$flush_block = function () use ( &$blocks, &$stack, &$markdown, $options ) {
+		$block = array_pop( $stack );
+		if ( $block->is_empty() ) {
+			return;
+		}
+
+		$parent = end( $stack );
+		if ( $parent instanceof Block ) {
+			$parent->append( $block );
+		} else {
+			if ( '' !== $markdown ) {
+				$markdown .= "\n" === $markdown[ strlen( $markdown ) - 1 ] ? "\n" : "\n\n";
+			}
+			$markdown .= ltrim( $block->flush( $options ), "\n" );
+		}
+	};
+
+	$close_a_paragraph = function () use ( &$line_buffer, &$stack, $options, &$flush_block ) {
 		if (
 			end( $stack ) instanceof Block_Paragraph &&
 			$line_buffer->has_non_whitespace_content()
 		) {
-			$paragraph = array_pop( $stack );
-			if ( end( $stack ) instanceof Block ) {
-				end( $stack )->append( $paragraph );
-			} else {
-				$blocks[] = $paragraph->flush( $options );
-			}
+			$flush_block();
 		} elseif ( $line_buffer->has_non_whitespace_content() ) {
 			$paragraph = new Block_Paragraph();
 			$paragraph->append_line( $line_buffer );
-			if ( end( $stack ) instanceof Block ) {
-				end( $stack )->append( $paragraph );
-			} else {
-				$blocks[] = $paragraph->flush( $options );
-			}
+			$stack[] = $paragraph;
+			$flush_block();
 		}
 		$line_buffer = new LineBuffer();
 	};
@@ -182,17 +191,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				$close_a_paragraph();
 
 				if ( $is_closer ) {
-					$blockquote = array_pop( $stack );
-					if ( $blockquote->is_empty() ) {
-						break;
-					}
-
-					$parent = end( $stack );
-					if ( $parent instanceof Block ) {
-						$parent->append( $blockquote );
-					} else {
-						$blocks[] = $blockquote->flush( $options );
-					}
+					$flush_block();
 				} else {
 					$stack[] = new Block_Blockquote();
 				}
@@ -207,12 +206,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				$close_a_paragraph();
 
 				if ( $is_closer ) {
-					$heading = array_pop( $stack );
-					if ( end( $stack ) instanceof Block ) {
-						end( $stack )->append( $heading );
-					} else {
-						$blocks[] = $heading->flush( $options );
-					}
+					$flush_block();
 				} else {
 					$heading = new Block_ATX( (int) $token_name[1] );
 					$heading->append_line( $line_buffer );
@@ -294,12 +288,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 			case 'PRE':
 				$close_a_paragraph();
 				if ( $is_closer ) {
-					$block = array_pop( $stack );
-					if ( end( $stack ) instanceof Block ) {
-						end( $stack )->append( $block );
-					} else {
-						$blocks[] = $block->flush( $options );
-					}
+					$flush_block();
 				} else {
 					$stack[] = new Block_Code();
 				}
@@ -323,17 +312,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					}
 
 					$line_buffer = new LineBuffer();
-					$list        = array_pop( $stack );
-					if ( $list->is_empty() ) {
-						break;
-					}
-
-					$parent = end( $stack );
-					if ( $parent instanceof Block ) {
-						$parent->append( $list );
-					} else {
-						$blocks[] = $list->flush( $options );
-					}
+					$flush_block();
 				} else {
 					if ( ! $line_buffer->has_non_whitespace_content() ) {
 						$line_buffer = new LineBuffer();
@@ -414,15 +393,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	}
 
 	while ( count( $stack ) > 0 ) {
-		$blocks[] = ( array_pop( $stack ) )->flush( $options );
-	}
-
-	$markdown = '';
-	$last     = '';
-	foreach ( $blocks as $i => $b ) {
-		// Ensure each block is separated by two spaces.
-		$markdown .= ( $i === 0 ? '' : ( "\n" === $last ? "\n" : "\n\n" ) ) . ltrim( $b, "\n" );
-		$last      = substr( $markdown, -1 );
+		$flush_block();
 	}
 
 	return $markdown;
