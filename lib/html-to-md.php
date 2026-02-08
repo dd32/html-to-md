@@ -26,6 +26,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	$p           = WP_HTML_Processor::create_fragment( $html );
 	$blocks      = array();
 	$line_buffer = new LineBuffer();
+	$soft_limit  = $options->soft_line_wrap;
 
 	/**
 	 * Maintains track of the number of open elements in the stack
@@ -367,6 +368,34 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					$stack[] = new Block_List( $style );
 				}
 				$depths[ $token_name ] += $is_closer ? -1 : 1;
+				break;
+
+			/*
+			 * Tables deserve their own block type which maintains
+			 * consistent widths for the cells, handles colspan
+			 * widths, rowspan, etc. This gets very complicated so
+			 * the current implementation does little more than to
+			 * draw borders around the cells so they are visually
+			 * separated.
+			 */
+			case 'TABLE':
+				$close_a_paragraph();
+				$options->soft_line_wrap = $is_closer ? $soft_limit : PHP_INT_MAX;
+				break;
+
+			case 'TD':
+			case 'TH':
+				if ( $is_closer ) {
+					$line_buffer->append_text( ' | ' );
+				}
+				break;
+
+			case 'TR':
+				if ( $is_closer ) {
+					$line_buffer->append_text( "\n" );
+				} else {
+					$line_buffer->append_text( '| ' );
+				}
 				break;
 		}
 	}
