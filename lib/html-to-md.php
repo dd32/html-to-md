@@ -98,6 +98,10 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 		return false;
 
 		skip:
+		if ( ! $p->expects_closer() ) {
+			return true;
+		}
+
 		$depth = $p->get_current_depth();
 		while ( $p->next_token() && $depth <= $p->get_current_depth() ) {
 			continue;
@@ -398,6 +402,15 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				}
 				break;
 		}
+	}
+
+	// Try again if parsing fails and it’s possible to recover it via the DOM.
+	if (
+		( $p->paused_at_incomplete_token() || null !== $p->get_last_error() ) &&
+		class_exists( '\DOM\HTMLDocument' ) && extension_loaded( 'libxml' )
+	) {
+		$dom = \DOM\HTMLDocument::createFromString( $html, LIBXML_NOERROR | LIBXML_HTML_NOIMPLIED );
+		return html_to_md( $dom->saveHTML(), $options );
 	}
 
 	while ( count( $stack ) > 0 ) {
