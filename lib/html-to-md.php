@@ -49,7 +49,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 
 	$flush_block = function () use ( &$blocks, &$stack, &$markdown, $options ) {
 		$block = array_pop( $stack );
-		if ( $block->is_empty() ) {
+		if ( null === $block || $block->is_empty() ) {
 			return;
 		}
 

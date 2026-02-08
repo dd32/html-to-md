@@ -39,6 +39,6 @@ class Block_Code extends Block {
 	}
 
 	public function is_empty(): bool {
-		return $this->code->is_empty();
+		return null === $this->code || $this->code->is_empty();
 	}
 }

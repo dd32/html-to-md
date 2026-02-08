@@ -34,6 +34,6 @@ class Block_ATX extends Block {
 	}
 
 	public function is_empty(): bool {
-		return $this->heading->is_empty();
+		return null === $this->heading || $this->heading->is_empty();
 	}
 }

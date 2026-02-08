@@ -25,9 +25,10 @@ class Block_List extends Block {
 	public function flush_ordered( MD_Options $options ): string {
 		list( $bullet, $n ) = explode( '.', $this->style );
 
+		$n              = (int) $n;
 		$md             = array();
 		$count          = count( $this->items );
-		$longest_prefix = strlen( (string) $count );
+		$longest_prefix = strlen( (string) ( $n + $count ) );
 		$indent         = implode( '', $options->indent );
 		$indent_width   = mb_strwidth( $indent );
 		$prefix_width   = $indent_width + $longest_prefix;
@@ -63,7 +64,6 @@ class Block_List extends Block {
 		$md           = array();
 		$bullet       = $this->style;
 		$indent       = implode( '', $options->indent );
-		$indent_width = mb_strwidth( $indent );
 		$prefix1      = "{$indent} {$bullet} ";
 		$prefixN      = "{$indent} " . str_repeat( ' ', mb_strwidth( $bullet ) ) . ' ';
 		$prefix_width = mb_strwidth( $prefix1 );
