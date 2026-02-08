@@ -104,6 +104,11 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 			goto skip;
 		}
 
+		$hidden = $p->get_attribute( 'aria-hidden' );
+		if ( is_string( $hidden ) && 0 === strcasecmp( $hidden, 'true' ) ) {
+			goto skip;
+		}
+
 		return false;
 
 		skip:
