@@ -176,6 +176,9 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				if ( $is_closer ) {
 					$line_buffer->release_format();
 				} else {
+					if ( 'CODE' === $token_name && end( $stack ) instanceof Block_Code ) {
+						end( $stack )->infer_language( $p );
+					}
 					$format = array(
 						'B'      => 'bolding',
 						'BR'     => 'newlining',
@@ -296,6 +299,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					$flush_block();
 				} else {
 					$stack[] = new Block_Code();
+					end( $stack )->infer_language( $p );
 				}
 				$depths['PRE'] += $is_closer ? -1 : 1;
 				break;
