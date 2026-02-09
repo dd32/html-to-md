@@ -1,4 +1,114 @@
-# Algorithm for converting HTML to Markdown
+## Description
+
+This library provides conversion from HTML into Markdown and Markdown-like plaintext.
+
+### Running
+
+The code requires loading the WordPress HTML API. When run inside a WordPress context
+this should work automatically.
+
+To run the test suite, create a `bootstrap.php` file which does this.
+
+```php
+<?php
+// bootstrap.php
+require '/path/to/wordpress/wp-load.php';
+require __DIR__ . '/lib/html-to-md.php';
+```
+
+Then run PHPUnit
+
+```bash
+composer require phpunit
+composer install
+vendor/bin/phpunit tests/
+```
+
+## Status
+
+### Known bugs
+
+ - In some cases, an image’s `alt` attribute or a link’s title might be duplicated
+   one or more times in the output. It’s unclear why this is happening.
+ - There are some spaces at the start of flushing paragraphs which require `ltrim()`
+   to eliminate. It’s unclear why those are appearing.
+ - Currently, `flush()` is being called on some `LineBuffer` instances more than once,
+   but they should be discarded after flushing. It’s unclear what code is reusing these,
+   and the fact that they are being reused might help explain the other existing bugs.
+
+### How to grow this project
+
+#### Character escaping
+
+For the sake of scope-cutting, syntax characters are not properly escaped. There is
+a poor mechanism in place which escapes certain characters within certain open formats,
+but this approach is based on a misunderstanding of escaping needs. Characters ought
+to be escaped which would otherwise be interpreted as Markdown syntax. This is the rule
+that should determine when and how to escape.
+
+To that end, visually-equivalent replacement is not currently implemented. Using a
+visual asterisk instead of the actual asterisk character, for instance, would remove the
+issue with escaping entirely. This can also be resolved by escaping all characters, but
+it’s a poor conversion to do that due to the impaired visual representation with so many
+escaped characters when they would be otherwise benign.
+
+#### Line-breaking
+
+There is no current hard-breaking support in this library. Adding that would involve
+making concrete breaking decisions after the soft-limit. For example, the soft-limit already
+determines whether to break based on how much a given word or segment would push past the
+limit, but a hard-breaking rule would then split that segment at the hard limit.
+
+Syntax is currently broken on line ends as well, but this should never happen. For example,
+a bolded span or a link’s syntax should only exist on a single line. Either the syntax should
+be terminated at the end of the first line and recreated at the start of the second, or the
+entire formatted span should be preserved on the line in which it appears.
+
+#### Whitespace preservation
+
+Whitespace is currently only preserved when inside a `PRE` element, but determination should
+follow a more-complicated metric, including the appearance of the `white-space` CSS property
+and deprecated elements like `LISTING`, `XMP`, and `PLAINTEXT`.
+
+#### Images, aria, and accessibility.
+
+There is significant room to continue to improve support for rendering visual HTML into text.
+No support exists for the `role` attribute, but that could substantially change the render of
+certain pages. Similarly, no support is added for `<figure>` or `<picture>` elements, which
+themselves fall back to contained `<img>` tags, but which provide more insight into how the
+images should display.
+
+#### Links
+
+Support is currently missing for `'at-end'` style of links, which appends link URLs at the end
+of the document instead of inline. This presents a tradeoff between readability of the document
+with URLs at the end, and locality of context for the URLs with the link titles.
+
+#### Tables
+
+Table support is currently minimal. There is need for a table block type which would track
+column widths and line up columns, handle `colspan` and `rowspan` attributes, and format cells
+appropriately.
+
+#### Streaming output
+
+The converter is currently built to support streaming the output as soon as a top-level paragraph
+is flushed. However, it returns a string and so that cannot happen the way that `html_to_md()` is
+written. Some option could determine whether to return or print, or an argument could be passed in
+which accepts a writable stream output.
+
+#### Class structure and naming
+
+The current set of classes and functions was designed for prototyping and vetting the design.
+Several of the pieces should be refactored into production-level organization:
+
+ - All classes need appropriate `WP_` prefixes.
+ - `html_to_md()` belongs in its own class; it should be a static method instead of a function.
+ - Closures in use should become private or protected class methods.
+ - `Block_Paragraph` and `LineBuffer` may be redundant. It should be explored whether they can
+   be combined into a single class.
+
+## Algorithm for converting HTML to Markdown
 
 This document describes the process for converting HTML into Markdown or other
 plaintext formats, whereby the goal is to reasonably represent the rendered
@@ -27,8 +137,6 @@ while ( $processor->next_token() ) {
 ```
 
 It provides a number of helper methods to inspect structurally the currently-matched token.
-
-## Knowns
 
 ### Block and inline content.
 
