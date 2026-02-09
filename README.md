@@ -245,7 +245,7 @@ of text between the soft and hard limits.
    line wrap.
 
 Because of a block’s indentation, line-wrapping must be performed on adjusted forms
-of the soft and hard limits. For instance, consider "<ul><li><ul><li><blockquote>":
+of the soft and hard limits. For instance, consider `<ul><li><ul><li><blockquote>`:
 the BLOCKQUOTE’s content will see two indentations from the unordered lists and a
 further indent ("> ") from the BLOCKQUOTE. This means that the new line-wrapping
 limits must be reduced by an appropriate amount, which is the sum of the indents.
