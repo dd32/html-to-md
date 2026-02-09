@@ -21,6 +21,9 @@ class Block_Code extends Block {
 			return '';
 		}
 
+		$previous_indent = $options->indent;
+		$options->indent[] = '    ';
+
 		$indent                  = implode( '', $options->indent );
 		$indent_length           = mb_strwidth( $indent );
 		$soft_limit              = $options->soft_line_wrap;
@@ -29,12 +32,16 @@ class Block_Code extends Block {
 		$prefix = "{$indent}```\n";
 		$buffer = '';
 		foreach ( explode( "\n", $this->code->raw_buffer() ) as $line ) {
-			$buffer .= "{$indent}{$line}\n";
+			$chunk = "{$indent}{$line}\n";
+			if ( strspn( $chunk, " \t\f\r\n" ) !== strlen( $chunk ) ) {
+				$buffer .= $chunk;
+			}
 		}
 		$buffer = trim( $buffer, "\n" );
 		$suffix = "\n{$indent}```\n";
 
 		$options->soft_line_wrap = $soft_limit;
+		$options->indent         = $previous_indent;
 		return "{$prefix}{$buffer}{$suffix}";
 	}
 
