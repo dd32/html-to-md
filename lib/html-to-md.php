@@ -331,13 +331,22 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 
 					if ( 'UL' === $token_name ) {
 						$type = is_string( $type ) ? strtolower( trim( $type, " \t\f\r\n" ) ) : '';
-						$style = array(
+						$bullets_syntax = array(
+							'circle'   => '*',
+							'disc'     => '-',
+						);
+						$bullets_presentational = array(
 							'circle'   => '•',
 							'disc'     => '◦',
 							'square'   => '▪',
 							'triangle' => '‣',
-						)[ $type ] ?? null;
-						$style = $style ?? array( '•', '◦', '▪', '▴', '⁃' )[ $depths['UL'] % 5 ];
+							'dash'     => '⁃',
+						);
+						$bullets = 'syntax' === $options->display_mode
+							? $bullets_syntax
+							: $bullets_presentational;
+						$style = $bullets_presentational[ $type ] ?? null;
+						$style = $style ?? array_values( $bullets )[ $depths['UL'] % 5 ];
 					} elseif ( 'OL' === $token_name ) {
 						$style = in_array( $type, [ '1', 'a', 'A', 'i', 'I' ], true )
 							? $type
