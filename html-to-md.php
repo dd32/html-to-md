@@ -53,4 +53,15 @@ add_action( 'init', function () {
 		},
 		1000
 	);
+
+	// Add a sanity check for whether the output buffer did indeed start.
+	add_action(
+		'wp_before_include_template',
+		function () {
+			if ( ! did_action( 'wp_template_enhancement_output_buffer_started' ) ) {
+				wp_die( 'Markdown is not available.', 406 );
+			}
+		},
+		PHP_INT_MAX
+	);
 } );
