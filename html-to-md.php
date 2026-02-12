@@ -5,6 +5,7 @@
  * Author: Dennis Snell <dennis.snell@automattic.com>
  * Description: Convert HTML documents to Markdown using WordPress’ HTML API.
  * Version: 2026-02-01
+ * Requires at least: 6.9
  */
 
 // Don’t load directly.
