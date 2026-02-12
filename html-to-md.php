@@ -14,6 +14,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once __DIR__ . '/lib/html-to-md.php';
 
+add_filter( 'html_to_markdown_starting_node_finder', fn ( $prev ) =>
+	$prev ?? function ( $p ) {
+	while ( $p->next_token() ) {
+		if (
+			'MAIN' === $p->get_tag() ||
+			'main' === $p->get_attribute( 'role' ) ||
+			'main-content' === $p->get_attribute( 'id' ) || // cloudflare.
+			'hnmain' === $p->get_attribute( 'id' )          // Hackernews.
+		) {
+			return true;
+		}
+	}
+
+	return false;
+} );
+
+remove_all_filters( 'wp_template_enhancement_output_buffer' );
 add_filter( 'wp_template_enhancement_output_buffer', function ( $output, $original ) {
 	$has_accept_header = isset( $_SERVER['HTTP_ACCEPT'] );
 	$has_markdown_type = $has_accept_header && 1 === preg_match( '~^text/markdown(?:;|$)~', $_SERVER['HTTP_ACCEPT'] );
@@ -26,4 +43,4 @@ add_filter( 'wp_template_enhancement_output_buffer', function ( $output, $origin
 	header( 'Content-type: text/markdown; charset=utf-8' );
 
 	return html_to_md( $output );
-}, 10, 2 );
+}, 1000, 2 );

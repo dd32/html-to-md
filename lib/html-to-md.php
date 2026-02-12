@@ -123,7 +123,16 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 		return true;
 	};
 
-	while ( $p->next_token() ) {
+	$node_finder = apply_filters( 'html_to_markdown_starting_node_finder', null );
+	if ( is_callable( $node_finder ) ) {
+		// If it failed to find something, show everything.
+		if ( ! call_user_func( $node_finder, $p ) ) {
+			$p = WP_HTML_Processor::create_fragment( $html );
+		};
+	}
+	$main_depth = $p->get_current_depth();
+
+	while ( $p->get_current_depth() >= $main_depth && $p->next_token() ) {
 		$token_name = $p->get_token_name();
 		$is_closer  = $p->is_tag_closer();
 
