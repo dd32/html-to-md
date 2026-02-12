@@ -65,3 +65,15 @@ add_action( 'init', function () {
 		PHP_INT_MAX
 	);
 } );
+
+add_action(
+	'wp_head',
+	function () {
+		printf(
+			'<link rel="alternate" type="text/markdown" title="%s" href="%s">' . "\n",
+			'Markdown format',
+			esc_url( add_query_arg( 'output_format', 'md' ) ),
+		);
+	},
+	2 // To be output with feed_links().
+);
