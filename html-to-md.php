@@ -47,8 +47,11 @@ add_action( 'init', function () {
 
 	add_filter(
 		'wp_template_enhancement_output_buffer',
-		function ( $output ) {
+		function ( $output ) use ( $has_markdown_type ) {
 			header( 'Content-type: text/markdown; charset=utf-8' );
+			if ( $has_markdown_type ) {
+				header( 'Vary: Accept' );
+			}
 			return html_to_md( $output );
 		},
 		1000
