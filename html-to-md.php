@@ -2,7 +2,7 @@
 
 /*
  * Plugin Name: HTML to Markdown
- * Author: Dennis Snell <dennis.snell@automattic.com>
+ * Author: Dennis Snell <dmsnell@git.wordpress.org>, Weston Ruter <westonruter@git.wordpress.org>, Jeremy Herve <jeherve@git.wordpress.org>
  * Description: Convert HTML documents to Markdown using WordPress’ HTML API.
  * Version: 2026-02-01
  * Requires at least: 6.9
