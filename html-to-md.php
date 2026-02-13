@@ -52,7 +52,43 @@ add_action( 'init', function () {
 			if ( $has_markdown_type ) {
 				header( 'Vary: Accept' );
 			}
-			return html_to_md( $output );
+
+			$title        = '';
+			$author       = '';
+			$published_on = '';
+			$modified_on  = '';
+			if ( is_singular() ) {
+				$title        = get_the_title();
+				$author       = get_the_author_meta( 'display_name' );
+				$published_on = get_the_date();
+				$modified_on  = get_the_modified_date();
+			} else {
+				$title_finder = new WP_HTML_Tag_Processor( $output );
+				if ( $title_finder->next_tag( 'title' ) ) {
+					$title = $title_finder->get_modifiable_text();
+				}
+			}
+
+			$frontmatter = '';
+			if ( ! empty( $title ) ) {
+				$frontmatter .= "Title: {$title}\n";
+			}
+			if ( ! empty( $author ) ) {
+				$frontmatter .= "Author: {$author}\n";
+			}
+			if ( ! empty( $published_on ) ) {
+				$frontmatter .= "Published: {$published_on}\n";
+			}
+			if ( ! empty( $modified_on ) && $modified_on !== $published_on ) {
+				$frontmatter .= "Last modified: {$modified_on}\n";
+			}
+			if ( ! empty( $frontmatter ) ) {
+				$frontmatter .= "\n---\n\n";
+			}
+
+			$markdown = html_to_md( $output );
+
+			return "{$frontmatter}{$markdown}";
 		},
 		1000
 	);
