@@ -5,7 +5,7 @@ namespace WordPress\Experiments\HtmlToMarkdown;
 /**
  * Stores formatting information while building a line for rendering.
  */
-class LineBuffer {
+class WP_Experimental_HTML_Renderer_Line_Buffer {
 	/**
 	 * Contains the plaintext content of the buffer, without any syntax.
 	 *
@@ -48,7 +48,7 @@ class LineBuffer {
 	 * @see self::$format_offset
 	 * @see self::$format_indices
 	 *
-	 * @var array<InlineFormat>
+	 * @var array<WP_Experimental_HTML_Renderer_Format>
 	 */
 	private array $formats = array();
 
@@ -56,7 +56,7 @@ class LineBuffer {
 		$this->buffer .= $text;
 	}
 
-	public function require_format( InlineFormat $format ) {
+	public function require_format( WP_Experimental_HTML_Renderer_Format $format ) {
 		$next_format_at         = \count( $this->formats );
 		$this->open_formats[]   = $next_format_at;
 		$this->format_offsets[] = \strlen( $this->buffer );
@@ -131,7 +131,7 @@ class LineBuffer {
 				$buffer .= $chunk;
 			}
 
-			if ( $format instanceof InlineFormat_Generic ) {
+			if ( $format instanceof WP_Experimental_HTML_Renderer_Format_Generic ) {
 				$type  = $format->type;
 				$depth = $effects[ $type ];
 
@@ -167,7 +167,7 @@ class LineBuffer {
 				$effects[ $type ] += 'entering' === $state ? 1 : -1;
 			}
 
-			if ( $format instanceof InlineFormat_Link ) {
+			if ( $format instanceof WP_Experimental_HTML_Renderer_Format_Link ) {
 				/*
 				 * Only render absolute HTTP/S links. Any relative links
 				 * should be expanded here by now. It may be worth rendering
@@ -188,7 +188,7 @@ class LineBuffer {
 				}
 			}
 
-			if ( $format instanceof InlineFormat_Image ) {
+			if ( $format instanceof WP_Experimental_HTML_Renderer_Format_Image ) {
 				/*
 				 * There’s a special case for “block images,” which comprise
 				 * the entirety of the line buffer. In these cases, the image
@@ -239,7 +239,7 @@ class LineBuffer {
 		 * and therefore not empty in the normal sense.
 		 */
 		foreach ( $this->formats as $format ) {
-			if ( $format instanceof InlineFormat_Image ) {
+			if ( $format instanceof WP_Experimental_HTML_Renderer_Format_Image ) {
 				return true;
 			}
 		}

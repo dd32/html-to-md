@@ -27,7 +27,7 @@ class WP_Experimental_HTML_Renderer {
 	 *
 	 * @since {WP_VERSION}
 	 *
-	 * @var MD_Options
+	 * @var WP_Experimental_HTML_Renderer_Options
 	 */
 	private $options;
 
@@ -36,7 +36,7 @@ class WP_Experimental_HTML_Renderer {
 	 *
 	 * @since {WP_VERSION}
 	 *
-	 * @var LineBuffer
+	 * @var WP_Experimental_HTML_Renderer_Line_Buffer
 	 */
 	private $line_buffer;
 
@@ -57,14 +57,14 @@ class WP_Experimental_HTML_Renderer {
 	/**
 	 * Tracks open block containers.
 	 *
-	 * @var Array<Block>
+	 * @var Array<WP_HTML_Renderer_Block>
 	 */
 	private $stack = array();
 
-	public function __construct( string $html, ?MD_Options $options = new MD_Options() ) {
+	public function __construct( string $html, ?WP_Experimental_HTML_Renderer_Options $options = new WP_Experimental_HTML_Renderer_Options() ) {
 		$this->html        = $html;
 		$this->options     = $options;
-		$this->line_buffer = new LineBuffer();
+		$this->line_buffer = new WP_Experimental_HTML_Renderer_Line_Buffer();
 	}
 
 	public function to_markdown() {
@@ -99,10 +99,10 @@ class WP_Experimental_HTML_Renderer {
 
 					$this->line_buffer->append_text( $chunk );
 					if (
-						! ( \end( $this->stack ) instanceof Block_Paragraph ) &&
+						! ( \end( $this->stack ) instanceof WP_Experimental_HTML_Renderer_Block_Paragraph ) &&
 						$this->line_buffer->has_non_whitespace_content()
 					) {
-						$paragraph = new Block_Paragraph();
+						$paragraph = new WP_Experimental_HTML_Renderer_Block_Paragraph();
 						$paragraph->append_line( $this->line_buffer );
 						$this->stack[] = $paragraph;
 					}
@@ -115,7 +115,7 @@ class WP_Experimental_HTML_Renderer {
 					} else {
 						$href = $p->get_attribute( 'href' );
 						if ( is_string( $href ) ) {
-							$this->line_buffer->require_format( new InlineFormat_Link( $href ) );
+							$this->line_buffer->require_format( new WP_Experimental_HTML_Renderer_Format_Link( $href ) );
 						}
 					}
 					break;
@@ -134,7 +134,7 @@ class WP_Experimental_HTML_Renderer {
 					if ( $is_closer ) {
 						$this->line_buffer->release_format();
 					} else {
-						if ( 'CODE' === $token_name && \end( $this->stack ) instanceof Block_Code ) {
+						if ( 'CODE' === $token_name && \end( $this->stack ) instanceof WP_Experimental_HTML_Renderer_Block_Code ) {
 							\end( $this->stack )->infer_language( $p );
 						}
 						$format = array(
@@ -149,7 +149,7 @@ class WP_Experimental_HTML_Renderer {
 							'SUB'    => 'subscripting',
 							'SUP'    => 'superscripting',
 						)[ $token_name ];
-						$this->line_buffer->require_format( new InlineFormat_Generic( $format ) );
+						$this->line_buffer->require_format( new WP_Experimental_HTML_Renderer_Format_Generic( $format ) );
 					}
 					break;
 
@@ -159,7 +159,7 @@ class WP_Experimental_HTML_Renderer {
 					if ( $is_closer ) {
 						$this->flush_block();
 					} else {
-						$this->stack[] = new Block_Blockquote();
+						$this->stack[] = new WP_Experimental_HTML_Renderer_Block_Blockquote();
 					}
 					break;
 
@@ -174,7 +174,7 @@ class WP_Experimental_HTML_Renderer {
 					if ( $is_closer ) {
 						$this->flush_block();
 					} else {
-						$heading = new Block_ATX( (int) $token_name[1] );
+						$heading = new WP_Experimental_HTML_Renderer_Block_ATX( (int) $token_name[1] );
 						$heading->append_line( $this->line_buffer );
 						$this->stack[] = $heading;
 					}
@@ -190,8 +190,8 @@ class WP_Experimental_HTML_Renderer {
 				 */
 				case 'HR':
 					$this->close_a_paragraph();
-					$break = new Block_Paragraph();
-					$this->line_buffer = new LineBuffer();
+					$break = new WP_Experimental_HTML_Renderer_Block_Paragraph();
+					$this->line_buffer = new WP_Experimental_HTML_Renderer_Line_Buffer();
 					$this->line_buffer->append_text( '---' );
 					$break->append_line( $this->line_buffer );
 					$this->stack[] = $break;
@@ -211,14 +211,14 @@ class WP_Experimental_HTML_Renderer {
 					$title = $p->get_attribute( 'title' );
 					$title = \is_string( $title ) ? $title : '';
 
-					$this->line_buffer->require_format( new InlineFormat_Image( $src, $alt, $title ) );
+					$this->line_buffer->require_format( new WP_Experimental_HTML_Renderer_Format_Image( $src, $alt, $title ) );
 					$this->line_buffer->release_format();
 					break;
 
 				case 'LI':
 					$this->close_a_paragraph();
-					if ( ! ( $is_closer || \end( $this->stack ) instanceof Block_List ) ) {
-						$this->stack[] = new Block_List( '' );
+					if ( ! ( $is_closer || \end( $this->stack ) instanceof WP_Experimental_HTML_Renderer_Block_List ) ) {
+						$this->stack[] = new WP_Experimental_HTML_Renderer_Block_List( '' );
 					}
 					break;
 
@@ -256,7 +256,7 @@ class WP_Experimental_HTML_Renderer {
 					if ( $is_closer ) {
 						$this->flush_block();
 					} else {
-						$this->stack[] = new Block_Code();
+						$this->stack[] = new WP_Experimental_HTML_Renderer_Block_Code();
 						\end( $this->stack )->infer_language( $p );
 					}
 					$this->depths['PRE'] += $is_closer ? -1 : 1;
@@ -268,8 +268,8 @@ class WP_Experimental_HTML_Renderer {
 
 					if ( $is_closer ) {
 						if ( $this->line_buffer->has_non_whitespace_content() ) {
-							if ( \end( $this->stack ) instanceof Block_List ) {
-								$item = new Block_Paragraph();
+							if ( \end( $this->stack ) instanceof WP_Experimental_HTML_Renderer_Block_List ) {
+								$item = new WP_Experimental_HTML_Renderer_Block_Paragraph();
 								$item->append_line( $this->line_buffer );
 							} else {
 								$item = array_pop( $this->stack );
@@ -278,11 +278,11 @@ class WP_Experimental_HTML_Renderer {
 							\end( $this->stack )->append( $item );
 						}
 
-						$this->line_buffer = new LineBuffer();
+						$this->line_buffer = new WP_Experimental_HTML_Renderer_Line_Buffer();
 						$this->flush_block();
 					} else {
 						if ( ! $this->line_buffer->has_non_whitespace_content() ) {
-							$this->line_buffer = new LineBuffer();
+							$this->line_buffer = new WP_Experimental_HTML_Renderer_Line_Buffer();
 						}
 
 						$type  = $p->get_attribute( 'type' );
@@ -324,7 +324,7 @@ class WP_Experimental_HTML_Renderer {
 							$style = "{$style}.{$start}";
 						}
 
-						$this->stack[] = new Block_List( $style );
+						$this->stack[] = new WP_Experimental_HTML_Renderer_Block_List( $style );
 					}
 					$this->depths[ $token_name ] += $is_closer ? -1 : 1;
 					break;
@@ -392,7 +392,7 @@ class WP_Experimental_HTML_Renderer {
 		}
 
 		$parent = \end( $this->stack );
-		if ( $parent instanceof Block ) {
+		if ( $parent instanceof WP_HTML_Renderer_Block ) {
 			$parent->append( $block );
 		} else {
 			if ( '' !== $this->output ) {
@@ -404,17 +404,17 @@ class WP_Experimental_HTML_Renderer {
 
 	private function close_a_paragraph() {
 		if (
-			\end( $this->stack ) instanceof Block_Paragraph &&
+			\end( $this->stack ) instanceof WP_Experimental_HTML_Renderer_Block_Paragraph &&
 			$this->line_buffer->has_non_whitespace_content()
 		) {
 			$this->flush_block();
 		} elseif ( $this->line_buffer->has_non_whitespace_content() ) {
-			$paragraph = new Block_Paragraph();
+			$paragraph = new WP_Experimental_HTML_Renderer_Block_Paragraph();
 			$paragraph->append_line( $this->line_buffer );
 			$this->stack[] = $paragraph;
 			$this->flush_block();
 		}
-		$this->line_buffer = new LineBuffer();
+		$this->line_buffer = new WP_Experimental_HTML_Renderer_Line_Buffer();
 	}
 
 	private function skip_hidden_content( $p ) {

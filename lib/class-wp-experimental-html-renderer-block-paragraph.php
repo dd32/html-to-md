@@ -2,17 +2,17 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-class Block_Paragraph extends Block {
+class WP_Experimental_HTML_Renderer_Block_Paragraph extends WP_HTML_Renderer_Block {
 	/**
-	 * @var Array<LineBuffer>
+	 * @var Array<WP_Experimental_HTML_Renderer_Line_Buffer>
 	 */
 	public array $lines = array();
 
-	public function append_line( LineBuffer $line ): void {
+	public function append_line( WP_Experimental_HTML_Renderer_Line_Buffer $line ): void {
 		$this->lines[] = $line;
 	}
 
-	public function flush( MD_Options $options ): string {
+	public function flush( WP_Experimental_HTML_Renderer_Options $options ): string {
 		$md = array();
 		foreach ( $this->lines as $line ) {
 			if ( ! $line->has_non_whitespace_content() ) {

@@ -2,7 +2,7 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-class MD_Options {
+class WP_Experimental_HTML_Renderer_Options {
 	public int $soft_line_wrap = 80;
 
 	/**

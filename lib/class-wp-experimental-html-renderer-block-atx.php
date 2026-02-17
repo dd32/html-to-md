@@ -2,20 +2,20 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-class Block_ATX extends Block {
-	public int         $level   = 1;
-	public ?LineBuffer $heading = null;
+class WP_Experimental_HTML_Renderer_Block_ATX extends WP_HTML_Renderer_Block {
+	public int                                        $level   = 1;
+	public ?WP_Experimental_HTML_Renderer_Line_Buffer $heading = null;
 
 	public function __construct( int $level ) {
 		$this->level = $level;
 	}
 
-	public function append_line( LineBuffer $line ): void {
+	public function append_line( WP_Experimental_HTML_Renderer_Line_Buffer $line ): void {
 		$this->heading = $line;
 	}
 
-	public function append( Block $block ): void {
-		if ( $block instanceof Block_Paragraph ) {
+	public function append( WP_HTML_Renderer_Block $block ): void {
+		if ( $block instanceof WP_Experimental_HTML_Renderer_Block_Paragraph ) {
 			$this->heading = $block->lines[0] ?? null;
 		} else {
 			$type = \strtr( \get_class( $block ), array( 'Block_' => '' ) );
@@ -23,7 +23,7 @@ class Block_ATX extends Block {
 		}
 	}
 
-	public function flush( MD_Options $options ): string {
+	public function flush( WP_Experimental_HTML_Renderer_Options $options ): string {
 		if ( ! isset( $this->heading ) || $this->heading->is_empty() ) {
 			return '';
 		}

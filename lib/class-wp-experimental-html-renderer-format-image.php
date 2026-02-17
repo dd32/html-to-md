@@ -5,7 +5,7 @@ namespace WordPress\Experiments\HtmlToMarkdown;
 /**
  * Represents an image, possibly with alternative text.
  */
-class InlineFormat_Image extends InlineFormat {
+class WP_Experimental_HTML_Renderer_Format_Image extends WP_Experimental_HTML_Renderer_Format {
 	/**
 	 * Source of the image.
 	 *

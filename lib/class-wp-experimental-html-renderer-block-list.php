@@ -2,11 +2,11 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-class Block_List extends Block {
+class WP_Experimental_HTML_Renderer_Block_List extends WP_HTML_Renderer_Block {
 	private string $style;
 
 	/**
-	 * @var Array<Block>
+	 * @var Array<WP_HTML_Renderer_Block>
 	 */
 	public array $items = array();
 
@@ -14,17 +14,17 @@ class Block_List extends Block {
 		$this->style = $style;
 	}
 
-	public function append( Block $block ): void {
+	public function append( WP_HTML_Renderer_Block $block ): void {
 		$this->items[] = $block;
 	}
 
-	public function flush( MD_Options $options ): string {
+	public function flush( WP_Experimental_HTML_Renderer_Options $options ): string {
 		return '.' === ( $this->style[1] ?? '' )
 			? $this->flush_ordered( $options )
 			: $this->flush_unordered( $options );
 	}
 
-	public function flush_ordered( MD_Options $options ): string {
+	public function flush_ordered( WP_Experimental_HTML_Renderer_Options $options ): string {
 		list( $bullet, $n ) = explode( '.', $this->style );
 
 		$n              = (int) $n;
@@ -62,7 +62,7 @@ class Block_List extends Block {
 		return \implode( "\n", $md );
 	}
 
-	public function flush_unordered( MD_Options $options ): string {
+	public function flush_unordered( WP_Experimental_HTML_Renderer_Options $options ): string {
 		$md           = array();
 		$bullet       = $this->style;
 		$indent       = \implode( '', $options->indent );
@@ -76,7 +76,7 @@ class Block_List extends Block {
 
 		foreach ( $this->items as $item ) {
 			$buffer = '';
-			$is_sublist = $item instanceof Block_List;
+			$is_sublist = $item instanceof WP_Experimental_HTML_Renderer_Block_List;
 
 			foreach ( \explode( "\n", $item->flush( $options ) ) as $i => $line ) {
 				if ( 0 === $i && $is_sublist && ! $was_sublist ) {

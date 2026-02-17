@@ -67,7 +67,7 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 										"Configured display mode must be either 'syntax' or 'presentation': check test fixture."
 									);
 									if ( ! isset( $options ) ) {
-										$options = new MD_Options();
+										$options = new WP_Experimental_HTML_Renderer_Options();
 									}
 									$options->display_mode = $display_mode;
 									break;
@@ -79,7 +79,7 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 										"Configured soft line wrap value of '{$soft_limit}' must be all digits: check test fixture."
 									);
 									if ( ! isset( $options ) ) {
-										$options = new MD_Options();
+										$options = new WP_Experimental_HTML_Renderer_Options();
 									}
 									$options->soft_line_wrap = (int) $soft_limit;
 									break;

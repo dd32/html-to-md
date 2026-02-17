@@ -5,7 +5,7 @@ namespace WordPress\Experiments\HtmlToMarkdown;
 /**
  * Represents a link with a label.
  */
-class InlineFormat_Link extends InlineFormat {
+class WP_Experimental_HTML_Renderer_Format_Link extends WP_Experimental_HTML_Renderer_Format {
 	/**
 	 * Where this link points.
 	 *

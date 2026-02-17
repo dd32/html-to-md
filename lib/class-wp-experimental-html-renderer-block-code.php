@@ -2,19 +2,19 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-class Block_Code extends Block {
-	public ?LineBuffer $code = null;
+class WP_Experimental_HTML_Renderer_Block_Code extends WP_HTML_Renderer_Block {
+	public ?WP_Experimental_HTML_Renderer_Line_Buffer $code = null;
 
 	public ?string $language = null;
 
 	public ?string $language_fallback = null;
 
-	public function append_line( LineBuffer $line ): void {
+	public function append_line( WP_Experimental_HTML_Renderer_Line_Buffer $line ): void {
 		$this->code = $line;
 	}
 
-	public function append( Block $block ): void {
-		if ( $block instanceof Block_Paragraph ) {
+	public function append( WP_HTML_Renderer_Block $block ): void {
+		if ( $block instanceof WP_Experimental_HTML_Renderer_Block_Paragraph ) {
 			$this->code = $block->lines[0] ?? null;
 		} else {
 			$type = \strtr( \get_class( $block ), array( 'Block_' => '' ) );
@@ -80,7 +80,7 @@ class Block_Code extends Block {
 		}
 	}
 
-	public function flush( MD_Options $options ): string {
+	public function flush( WP_Experimental_HTML_Renderer_Options $options ): string {
 		if ( ! isset( $this->code ) || $this->code->is_empty() ) {
 			return '';
 		}
