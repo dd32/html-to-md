@@ -3,6 +3,15 @@
 namespace WordPress\Experiments\HtmlToMarkdown;
 
 class WP_Experimental_HTML_Renderer_Options {
+	/**
+	 * Used to remap relative URLs into absolute URLs.
+	 *
+	 * @since {WP_VERSION}
+	 *
+	 * @var string|null
+	 */
+	public ?string $base_url = null;
+
 	public int $soft_line_wrap = 80;
 
 	/**

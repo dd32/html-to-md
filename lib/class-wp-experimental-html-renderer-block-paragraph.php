@@ -19,7 +19,7 @@ class WP_Experimental_HTML_Renderer_Block_Paragraph extends WP_Experimental_HTML
 				continue;
 			}
 
-			$md[] = \implode( "\n", line_wrap( $line->flush(), $options->soft_line_wrap ) );
+			$md[] = \implode( "\n", line_wrap( $line->flush( $options ), $options->soft_line_wrap ) );
 		}
 
 		return \implode( "\n\n", $md );

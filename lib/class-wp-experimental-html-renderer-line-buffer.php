@@ -75,7 +75,7 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 		return $this->buffer;
 	}
 
-	public function flush(): string {
+	public function flush( WP_Experimental_HTML_Renderer_Options $options ): string {
 		$offsets      = $this->format_offsets;
 		$indices      = $this->format_indices;
 		$formats      = $this->formats;
@@ -168,6 +168,8 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 			}
 
 			if ( $format instanceof WP_Experimental_HTML_Renderer_Format_Link ) {
+				$url = WP_Experimental_HTML_Renderer_Format_Link::normalize( $format->url, $options->base_url );
+
 				/*
 				 * Only render absolute HTTP/S links. Any relative links
 				 * should be expanded here by now. It may be worth rendering
@@ -175,8 +177,8 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 				 * more, but this implementation is currently limited to HTTP.
 				 */
 				if (
-					! \str_starts_with( $format->url, 'http://' ) &&
-					! \str_starts_with( $format->url, 'https://' )
+					! \str_starts_with( $url, 'http://' ) &&
+					! \str_starts_with( $url, 'https://' )
 				) {
 					goto next;
 				}
@@ -184,7 +186,7 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 				if ( 'entering' === $state ) {
 					$buffer .= '[';
 				} else {
-					$buffer .= "]({$format->url})";
+					$buffer .= "]({$url})";
 				}
 			}
 

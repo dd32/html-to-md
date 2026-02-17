@@ -97,17 +97,6 @@ is flushed. However, it returns a string and so that cannot happen the way that 
 written. Some option could determine whether to return or print, or an argument could be passed in
 which accepts a writable stream output.
 
-#### Class structure and naming
-
-The current set of classes and functions was designed for prototyping and vetting the design.
-Several of the pieces should be refactored into production-level organization:
-
- - All classes need appropriate `WP_` prefixes.
- - `html_to_md()` belongs in its own class; it should be a static method instead of a function.
- - Closures in use should become private or protected class methods.
- - `Block_Paragraph` and `LineBuffer` may be redundant. It should be explored whether they can
-   be combined into a single class.
-
 ## Algorithm for converting HTML to Markdown
 
 This document describes the process for converting HTML into Markdown or other

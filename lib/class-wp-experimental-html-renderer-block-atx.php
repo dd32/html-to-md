@@ -30,7 +30,7 @@ class WP_Experimental_HTML_Renderer_Block_ATX extends WP_Experimental_HTML_Rende
 
 		$prefix = \str_repeat( '#', \max( 1, \min( 6, $this->level ) ) );
 		// @todo This is a stylistic choice.
-		$heading = \strtr( $this->heading->flush(), array( "\n" => "⏎ " ) );
+		$heading = \strtr( $this->heading->flush( $options ), array( "\n" => "⏎ " ) );
 
 		return "\n{$prefix} {$heading}\n";
 	}

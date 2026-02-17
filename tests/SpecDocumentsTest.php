@@ -8,6 +8,7 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 	/**
 	 * Tests conversions based on static test cases.
 	 *
+	 * @ticket {TICKET_NUMBER}
 	 *
 	 * @param string $html     Input HTML to render.
 	 * @param string $markdown Expected Markdown output.
@@ -59,6 +60,14 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 					switch ( $token_name ) {
 						case 'META':
 							switch ( $p->get_attribute( 'name' ) ) {
+								case 'base-url':
+									$base_url = $p->get_attribute( 'content' );
+									if ( ! isset( $options ) ) {
+										$options = new WP_Experimental_HTML_Renderer_Options();
+									}
+									$options->base_url = $base_url;
+									break;
+
 								case 'display-mode':
 									$display_mode = $p->get_attribute( 'content' );
 									self::assertContains(

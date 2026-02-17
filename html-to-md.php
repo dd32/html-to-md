@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
 }
 
-require_once __DIR__ . '/lib/html-to-md.php';
+require_once __DIR__ . '/wp-html-to-markdown.php';
 
 add_filter( 'html_to_markdown_starting_node_finder', fn ( $prev ) =>
 	$prev ?? function ( $p ) {
@@ -86,7 +86,7 @@ add_action( 'init', function () {
 				$frontmatter .= "\n---\n\n";
 			}
 
-			$markdown = html_to_md( $output );
+			$markdown = wp_html_to_markdown( $output );
 
 			return "{$frontmatter}{$markdown}";
 		},
