@@ -99,12 +99,12 @@ class WP_Experimental_HTML_Renderer {
 
 					$this->line_buffer->append_text( $chunk );
 					if (
-						! ( \end( $this->stack ) instanceof WP_Experimental_HTML_Renderer_Block_Paragraph ) &&
+						! ( $this->innermost_block() instanceof WP_Experimental_HTML_Renderer_Block_Paragraph ) &&
 						$this->line_buffer->has_non_whitespace_content()
 					) {
 						$paragraph = new WP_Experimental_HTML_Renderer_Block_Paragraph();
 						$paragraph->append_line( $this->line_buffer );
-						$this->stack[] = $paragraph;
+						$this->enter_block( $paragraph );
 					}
 					break;
 
@@ -134,8 +134,8 @@ class WP_Experimental_HTML_Renderer {
 					if ( $is_closer ) {
 						$this->line_buffer->release_format();
 					} else {
-						if ( 'CODE' === $token_name && \end( $this->stack ) instanceof WP_Experimental_HTML_Renderer_Block_Code ) {
-							\end( $this->stack )->infer_language( $p );
+						if ( 'CODE' === $token_name && $this->innermost_block() instanceof WP_Experimental_HTML_Renderer_Block_Code ) {
+							$this->innermost_block()->infer_language( $p );
 						}
 						$format = array(
 							'B'      => 'bolding',
@@ -159,7 +159,7 @@ class WP_Experimental_HTML_Renderer {
 					if ( $is_closer ) {
 						$this->flush_block();
 					} else {
-						$this->stack[] = new WP_Experimental_HTML_Renderer_Block_Blockquote();
+						$this->enter_block( new WP_Experimental_HTML_Renderer_Block_Blockquote() );
 					}
 					break;
 
@@ -176,7 +176,7 @@ class WP_Experimental_HTML_Renderer {
 					} else {
 						$heading = new WP_Experimental_HTML_Renderer_Block_ATX( (int) $token_name[1] );
 						$heading->append_line( $this->line_buffer );
-						$this->stack[] = $heading;
+						$this->enter_block( $heading );
 					}
 
 					break;
@@ -194,7 +194,7 @@ class WP_Experimental_HTML_Renderer {
 					$this->line_buffer = new WP_Experimental_HTML_Renderer_Line_Buffer();
 					$this->line_buffer->append_text( '---' );
 					$break->append_line( $this->line_buffer );
-					$this->stack[] = $break;
+					$this->enter_block( $break );
 					$this->close_a_paragraph();
 					break;
 
@@ -217,8 +217,8 @@ class WP_Experimental_HTML_Renderer {
 
 				case 'LI':
 					$this->close_a_paragraph();
-					if ( ! ( $is_closer || \end( $this->stack ) instanceof WP_Experimental_HTML_Renderer_Block_List ) ) {
-						$this->stack[] = new WP_Experimental_HTML_Renderer_Block_List( '' );
+					if ( ! ( $is_closer || $this->innermost_block() instanceof WP_Experimental_HTML_Renderer_Block_List ) ) {
+						$this->enter_block( new WP_Experimental_HTML_Renderer_Block_List( '' ) );
 					}
 					break;
 
@@ -256,8 +256,8 @@ class WP_Experimental_HTML_Renderer {
 					if ( $is_closer ) {
 						$this->flush_block();
 					} else {
-						$this->stack[] = new WP_Experimental_HTML_Renderer_Block_Code();
-						\end( $this->stack )->infer_language( $p );
+						$this->enter_block( new WP_Experimental_HTML_Renderer_Block_Code() );
+						$this->innermost_block()->infer_language( $p );
 					}
 					$this->depths['PRE'] += $is_closer ? -1 : 1;
 					break;
@@ -268,14 +268,14 @@ class WP_Experimental_HTML_Renderer {
 
 					if ( $is_closer ) {
 						if ( $this->line_buffer->has_non_whitespace_content() ) {
-							if ( \end( $this->stack ) instanceof WP_Experimental_HTML_Renderer_Block_List ) {
+							if ( $this->innermost_block() instanceof WP_Experimental_HTML_Renderer_Block_List ) {
 								$item = new WP_Experimental_HTML_Renderer_Block_Paragraph();
 								$item->append_line( $this->line_buffer );
 							} else {
-								$item = array_pop( $this->stack );
+								$item = $this->close_innermost_block();
 							}
 
-							\end( $this->stack )->append( $item );
+							$this->innermost_block()->append( $item );
 						}
 
 						$this->line_buffer = new WP_Experimental_HTML_Renderer_Line_Buffer();
@@ -324,7 +324,7 @@ class WP_Experimental_HTML_Renderer {
 							$style = "{$style}.{$start}";
 						}
 
-						$this->stack[] = new WP_Experimental_HTML_Renderer_Block_List( $style );
+						$this->enter_block( new WP_Experimental_HTML_Renderer_Block_List( $style ) );
 					}
 					$this->depths[ $token_name ] += $is_closer ? -1 : 1;
 					break;
@@ -386,12 +386,12 @@ class WP_Experimental_HTML_Renderer {
 	}
 
 	private function flush_block() {
-		$block = \array_pop( $this->stack );
+		$block = $this->close_innermost_block();
 		if ( null === $block || $block->is_empty() ) {
 			return;
 		}
 
-		$parent = \end( $this->stack );
+		$parent = $this->innermost_block();
 		if ( $parent instanceof WP_Experimental_HTML_Renderer_Block ) {
 			$parent->append( $block );
 		} else {
@@ -404,14 +404,14 @@ class WP_Experimental_HTML_Renderer {
 
 	private function close_a_paragraph() {
 		if (
-			\end( $this->stack ) instanceof WP_Experimental_HTML_Renderer_Block_Paragraph &&
+			$this->innermost_block() instanceof WP_Experimental_HTML_Renderer_Block_Paragraph &&
 			$this->line_buffer->has_non_whitespace_content()
 		) {
 			$this->flush_block();
 		} elseif ( $this->line_buffer->has_non_whitespace_content() ) {
 			$paragraph = new WP_Experimental_HTML_Renderer_Block_Paragraph();
 			$paragraph->append_line( $this->line_buffer );
-			$this->stack[] = $paragraph;
+			$this->enter_block( $paragraph );
 			$this->flush_block();
 		}
 		$this->line_buffer = new WP_Experimental_HTML_Renderer_Line_Buffer();
@@ -459,5 +459,19 @@ class WP_Experimental_HTML_Renderer {
 			continue;
 		}
 		return true;
+	}
+
+	private function enter_block( WP_Experimental_HTML_Renderer_Block $block ) {
+		$this->stack[] = $block;
+	}
+
+	private function close_innermost_block(): ?WP_Experimental_HTML_Renderer_Block {
+		return \array_pop( $this->stack );
+	}
+
+	private function innermost_block(): ?WP_Experimental_HTML_Renderer_Block {
+		$stack_size = \count( $this->stack );
+
+		return $stack_size > 0 ? $this->stack[ $stack_size - 1 ] : null;
 	}
 }
