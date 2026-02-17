@@ -1,5 +1,7 @@
 <?php
 
+namespace WordPress\Experiments\HtmlToMarkdown;
+
 class Block_Paragraph extends Block {
 	/**
 	 * @var Array<LineBuffer>
@@ -17,10 +19,10 @@ class Block_Paragraph extends Block {
 				continue;
 			}
 
-			$md[] = implode( "\n", line_wrap( $line->flush(), $options->soft_line_wrap ) );
+			$md[] = \implode( "\n", line_wrap( $line->flush(), $options->soft_line_wrap ) );
 		}
 
-		return implode( "\n\n", $md );
+		return \implode( "\n\n", $md );
 	}
 
 	public function is_empty(): bool {

@@ -1,5 +1,7 @@
 <?php
 
+namespace WordPress\Experiments\HtmlToMarkdown;
+
 class Block_ATX extends Block {
 	public int         $level   = 1;
 	public ?LineBuffer $heading = null;
@@ -16,8 +18,8 @@ class Block_ATX extends Block {
 		if ( $block instanceof Block_Paragraph ) {
 			$this->heading = $block->lines[0] ?? null;
 		} else {
-			$type = strtr( get_class( $block ), array( 'Block_' => '' ) );
-			throw new Error( "Cannot add block of type '{$type}' to code block." );
+			$type = \strtr( \get_class( $block ), array( 'Block_' => '' ) );
+			throw new \Error( "Cannot add block of type '{$type}' to code block." );
 		}
 	}
 
@@ -26,9 +28,9 @@ class Block_ATX extends Block {
 			return '';
 		}
 
-		$prefix = str_repeat( '#', max( 1, min( 6, $this->level ) ) );
+		$prefix = \str_repeat( '#', \max( 1, \min( 6, $this->level ) ) );
 		// @todo This is a stylistic choice.
-		$heading = strtr( $this->heading->flush(), array( "\n" => "⏎ " ) );
+		$heading = \strtr( $this->heading->flush(), array( "\n" => "⏎ " ) );
 
 		return "\n{$prefix} {$heading}\n";
 	}

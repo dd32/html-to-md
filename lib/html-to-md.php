@@ -1,5 +1,7 @@
 <?php
 
+namespace WordPress\Experiments\HtmlToMarkdown;
+
 require __DIR__ . '/../deps/polyfill/wordpress.php';
 require __DIR__ . '/line-wrap.php';
 require __DIR__ . '/class-md-options.php';
@@ -24,7 +26,7 @@ require __DIR__ . '/line-buffer.php';
  * @return string Input HTML rendered into Markdown
  */
 function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
-	$p           = WP_HTML_Processor::create_fragment( $html );
+	$p           = \WP_HTML_Processor::create_fragment( $html );
 	$line_buffer = new LineBuffer();
 	$soft_limit  = $options->soft_line_wrap;
 	$markdown    = '';
@@ -49,25 +51,25 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	$stack = array();
 
 	$flush_block = function () use ( &$blocks, &$stack, &$markdown, $options ) {
-		$block = array_pop( $stack );
+		$block = \array_pop( $stack );
 		if ( null === $block || $block->is_empty() ) {
 			return;
 		}
 
-		$parent = end( $stack );
+		$parent = \end( $stack );
 		if ( $parent instanceof Block ) {
 			$parent->append( $block );
 		} else {
 			if ( '' !== $markdown ) {
-				$markdown .= "\n" === $markdown[ strlen( $markdown ) - 1 ] ? "\n" : "\n\n";
+				$markdown .= "\n" === $markdown[ \strlen( $markdown ) - 1 ] ? "\n" : "\n\n";
 			}
-			$markdown .= ltrim( $block->flush( $options ), "\n" );
+			$markdown .= \ltrim( $block->flush( $options ), "\n" );
 		}
 	};
 
 	$close_a_paragraph = function () use ( &$line_buffer, &$stack, $options, &$flush_block ) {
 		if (
-			end( $stack ) instanceof Block_Paragraph &&
+			\end( $stack ) instanceof Block_Paragraph &&
 			$line_buffer->has_non_whitespace_content()
 		) {
 			$flush_block();
@@ -100,13 +102,13 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 		$hidden = $p->get_attribute( 'hidden' );
 		if (
 			isset( $hidden ) &&
-			! ( is_string( $hidden ) && 0 === strcasecmp( $hidden, 'until-found' ) )
+			! ( \is_string( $hidden ) && 0 === \strcasecmp( $hidden, 'until-found' ) )
 		) {
 			goto skip;
 		}
 
 		$hidden = $p->get_attribute( 'aria-hidden' );
-		if ( is_string( $hidden ) && 0 === strcasecmp( $hidden, 'true' ) ) {
+		if ( \is_string( $hidden ) && 0 === \strcasecmp( $hidden, 'true' ) ) {
 			goto skip;
 		}
 
@@ -124,11 +126,11 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 		return true;
 	};
 
-	$node_finder = apply_filters( 'html_to_markdown_starting_node_finder', null );
-	if ( is_callable( $node_finder ) ) {
+	$node_finder = \apply_filters( 'html_to_markdown_starting_node_finder', null );
+	if ( \is_callable( $node_finder ) ) {
 		// If it failed to find something, show everything.
-		if ( ! call_user_func( $node_finder, $p ) ) {
-			$p = WP_HTML_Processor::create_fragment( $html );
+		if ( ! \call_user_func( $node_finder, $p ) ) {
+			$p = \WP_HTML_Processor::create_fragment( $html );
 		};
 	}
 	$main_depth = $p->get_current_depth();
@@ -147,11 +149,11 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				$chunk               = $p->get_modifiable_text();
 				$chunk = $preserve_whitespace
 					? $chunk
-					: preg_replace( '~[ \t\f\r\n]+~', ' ', $chunk );
+					: \preg_replace( '~[ \t\f\r\n]+~', ' ', $chunk );
 
 				$line_buffer->append_text( $chunk );
 				if (
-					! ( end( $stack ) instanceof Block_Paragraph ) &&
+					! ( \end( $stack ) instanceof Block_Paragraph ) &&
 					$line_buffer->has_non_whitespace_content()
 				) {
 					$paragraph = new Block_Paragraph();
@@ -186,8 +188,8 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 				if ( $is_closer ) {
 					$line_buffer->release_format();
 				} else {
-					if ( 'CODE' === $token_name && end( $stack ) instanceof Block_Code ) {
-						end( $stack )->infer_language( $p );
+					if ( 'CODE' === $token_name && \end( $stack ) instanceof Block_Code ) {
+						\end( $stack )->infer_language( $p );
 					}
 					$format = array(
 						'B'      => 'bolding',
@@ -252,16 +254,16 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 
 			case 'IMG':
 				$src = $p->get_attribute( 'src' );
-				if ( ! is_string( $src ) || empty( trim( $src ) ) ) {
+				if ( ! \is_string( $src ) || empty( \trim( $src ) ) ) {
 					// Only consider images which contain some content.
 					break;
 				}
 
 				$alt = $p->get_attribute( 'alt' );
-				$alt = is_string( $alt ) ? $alt : '';
+				$alt = \is_string( $alt ) ? $alt : '';
 
 				$title = $p->get_attribute( 'title' );
-				$title = is_string( $title ) ? $title : '';
+				$title = \is_string( $title ) ? $title : '';
 
 				$line_buffer->require_format( new InlineFormat_Image( $src, $alt, $title ) );
 				$line_buffer->release_format();
@@ -269,7 +271,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 
 			case 'LI':
 				$close_a_paragraph();
-				if ( ! ( $is_closer || end( $stack ) instanceof Block_List ) ) {
+				if ( ! ( $is_closer || \end( $stack ) instanceof Block_List ) ) {
 					$stack[] = new Block_List( '' );
 				}
 				break;
@@ -309,7 +311,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					$flush_block();
 				} else {
 					$stack[] = new Block_Code();
-					end( $stack )->infer_language( $p );
+					\end( $stack )->infer_language( $p );
 				}
 				$depths['PRE'] += $is_closer ? -1 : 1;
 				break;
@@ -320,14 +322,14 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 
 				if ( $is_closer ) {
 					if ( $line_buffer->has_non_whitespace_content() ) {
-						if ( end( $stack ) instanceof Block_List ) {
+						if ( \end( $stack ) instanceof Block_List ) {
 							$item = new Block_Paragraph();
 							$item->append_line( $line_buffer );
 						} else {
 							$item = array_pop( $stack );
 						}
 
-						end( $stack )->append( $item );
+						\end( $stack )->append( $item );
 					}
 
 					$line_buffer = new LineBuffer();
@@ -340,7 +342,7 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 					$type  = $p->get_attribute( 'type' );
 
 					if ( 'UL' === $token_name ) {
-						$type = is_string( $type ) ? strtolower( trim( $type, " \t\f\r\n" ) ) : '';
+						$type = \is_string( $type ) ? \strtolower( \trim( $type, " \t\f\r\n" ) ) : '';
 						$bullets_syntax = array(
 							'circle'   => '*',
 							'disc'     => '-',
@@ -356,16 +358,16 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 							? $bullets_syntax
 							: $bullets_presentational;
 						$style = $bullets_presentational[ $type ] ?? null;
-						$style = $style ?? array_values( $bullets )[ $depths['UL'] % 5 ];
+						$style = $style ?? \array_values( $bullets )[ $depths['UL'] % 5 ];
 					} elseif ( 'OL' === $token_name ) {
-						$style = in_array( $type, [ '1', 'a', 'A', 'i', 'I' ], true )
+						$style = \in_array( $type, [ '1', 'a', 'A', 'i', 'I' ], true )
 							? $type
 							: [ '1', 'a', 'A', 'i', 'I' ][ $depths['OL'] % 5 ];
 
 						$start = $p->get_attribute( 'start' );
 						if (
-							is_string( $start ) &&
-							strspn( $start, '0123456789' ) === strlen( $start )
+							\is_string( $start ) &&
+							\strspn( $start, '0123456789' ) === \strlen( $start )
 						) {
 							$start = (int) $start;
 						} else {
@@ -414,13 +416,13 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 	// Try again if parsing fails and it’s possible to recover it via the DOM.
 	if (
 		( $p->paused_at_incomplete_token() || null !== $p->get_last_error() ) &&
-		class_exists( '\DOM\HTMLDocument' ) && extension_loaded( 'libxml' )
+		\class_exists( '\DOM\HTMLDocument' ) && \extension_loaded( 'libxml' )
 	) {
 		$dom = \DOM\HTMLDocument::createFromString( $html, LIBXML_NOERROR | LIBXML_HTML_NOIMPLIED );
 		return html_to_md( $dom->saveHTML(), $options );
 	}
 
-	while ( count( $stack ) > 0 ) {
+	while ( \count( $stack ) > 0 ) {
 		$flush_block();
 	}
 

@@ -1,5 +1,7 @@
 <?php
 
+namespace WordPress\Experiments\HtmlToMarkdown;
+
 /**
  * Stores formatting information while building a line for rendering.
  */
@@ -55,18 +57,18 @@ class LineBuffer {
 	}
 
 	public function require_format( InlineFormat $format ) {
-		$next_format_at         = count( $this->formats );
+		$next_format_at         = \count( $this->formats );
 		$this->open_formats[]   = $next_format_at;
-		$this->format_offsets[] = strlen( $this->buffer );
+		$this->format_offsets[] = \strlen( $this->buffer );
 		$this->format_indices[] = $next_format_at;
 		$this->formats[]        = $format;
 	}
 
 	public function release_format() {
-		$this->format_offsets[] = -strlen( $this->buffer );
+		$this->format_offsets[] = -\strlen( $this->buffer );
 //		assert( count( $this->open_formats ) > 0 );
 		// @todo how could this be missing?
-		$this->format_indices[] = array_pop( $this->open_formats );
+		$this->format_indices[] = \array_pop( $this->open_formats );
 	}
 
 	public function raw_buffer(): string {
@@ -79,7 +81,7 @@ class LineBuffer {
 		$formats      = $this->formats;
 		$was_at       = 0;
 		$buffer       = '';
-		$length       = strlen( $this->buffer );
+		$length       = \strlen( $this->buffer );
 		/** @var Array<string, int> $effects */
 		$effects      = array(
 			'bolding'        => 0,
@@ -106,10 +108,10 @@ class LineBuffer {
 			'striking-out' => array( '~' => '\~' ),
 		);
 
-		for ( $i = 0; $i < count( $offsets ); $i++ ) {
+		for ( $i = 0; $i < \count( $offsets ); $i++ ) {
 			$at     = $offsets[ $i ];
 			$state  = $at < 0 ? 'exiting' : 'entering';
-			$at     = abs( $at );
+			$at     = \abs( $at );
 			$index  = $indices[ $i ];
 
 			// @todo Why is this necessary?
@@ -120,10 +122,10 @@ class LineBuffer {
 			$format = $formats[ $index ];
 
 			if ( $at > $was_at ) {
-				$chunk   = substr( $this->buffer, $was_at, $at - $was_at );
+				$chunk   = \substr( $this->buffer, $was_at, $at - $was_at );
 				foreach ( $effects as $effect => $depth ) {
 					if ( $depth > 0 && isset( $replacements[ $effect ] ) ) {
-						$chunk = strtr( $chunk, $replacements[ $effect ] );
+						$chunk = \strtr( $chunk, $replacements[ $effect ] );
 					}
 				}
 				$buffer .= $chunk;
@@ -151,13 +153,13 @@ class LineBuffer {
 				} elseif ( ( 0 === $depth && 'entering' === $state ) || ( $depth === 1 && 'exiting' === $state ) ) {
 					$matching_offset = null;
 
-					for ( $k = 0; $k < count( $indices ); $k++ ) {
+					for ( $k = 0; $k < \count( $indices ); $k++ ) {
 						if ( $k !== $i && $indices[ $k ] === $index ) {
 							$matching_offset = $offsets[ $k ];
 						}
 					}
 
-					if ( ! isset( $matching_offset ) || abs( $matching_offset ) !== $at ) {
+					if ( ! isset( $matching_offset ) || \abs( $matching_offset ) !== $at ) {
 						$buffer .= $syntax[ $type ][0];
 					}
 				}
@@ -173,8 +175,8 @@ class LineBuffer {
 				 * more, but this implementation is currently limited to HTTP.
 				 */
 				if (
-					! str_starts_with( $format->url, 'http://' ) &&
-					! str_starts_with( $format->url, 'https://' )
+					! \str_starts_with( $format->url, 'http://' ) &&
+					! \str_starts_with( $format->url, 'https://' )
 				) {
 					goto next;
 				}
@@ -197,8 +199,8 @@ class LineBuffer {
 				 * block image, but that information won’t be known here.
 				 */
 				if (
-					1 === count( $formats ) &&
-					'' === trim( $this->buffer, " \r\t\f\n" )
+					1 === \count( $formats ) &&
+					'' === \trim( $this->buffer, " \r\t\f\n" )
 				) {
 					return '' !== $format->title
 						? "![{$format->alt_text}]({$format->src_url} \"{$format->title}\")"
@@ -217,10 +219,10 @@ class LineBuffer {
 		}
 
 		if ( $was_at < $length ) {
-			$buffer .= substr( $this->buffer, $was_at );
+			$buffer .= \substr( $this->buffer, $was_at );
 		}
 
-		return rtrim( $buffer, " \t\f\r\n" );
+		return \rtrim( $buffer, " \t\f\r\n" );
 	}
 
 	public function is_empty(): bool {
@@ -228,7 +230,7 @@ class LineBuffer {
 	}
 
 	public function has_non_whitespace_content(): bool {
-		if ( strspn( $this->buffer, " \t\f" ) !== strlen( $this->buffer ) ) {
+		if ( \strspn( $this->buffer, " \t\f" ) !== \strlen( $this->buffer ) ) {
 			return true;
 		}
 

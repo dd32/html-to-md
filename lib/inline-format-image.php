@@ -1,5 +1,7 @@
 <?php
 
+namespace WordPress\Experiments\HtmlToMarkdown;
+
 /**
  * Represents an image, possibly with alternative text.
  */

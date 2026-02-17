@@ -1,5 +1,7 @@
 <?php
 
+namespace WordPress\Experiments\HtmlToMarkdown;
+
 class Block_Code extends Block {
 	public ?LineBuffer $code = null;
 
@@ -15,12 +17,12 @@ class Block_Code extends Block {
 		if ( $block instanceof Block_Paragraph ) {
 			$this->code = $block->lines[0] ?? null;
 		} else {
-			$type = strtr( get_class( $block ), array( 'Block_' => '' ) );
-			throw new Error( "Cannot add block of type '{$type}' to code block." );
+			$type = \strtr( \get_class( $block ), array( 'Block_' => '' ) );
+			throw new \Error( "Cannot add block of type '{$type}' to code block." );
 		}
 	}
 
-	public function infer_language( WP_HTML_PRocessor $processor ): void {
+	public function infer_language( \WP_HTML_Processor $processor ): void {
 		if ( isset( $this->language ) ) {
 			return;
 		}
@@ -43,12 +45,12 @@ class Block_Code extends Block {
 		$known_languages = array( 'asm', 'apl', 'bash', 'c', 'cpp', 'clojure', 'clojurescript', 'commonlisp', 'diff', 'elixir', 'erlang', 'go', 'html', 'javascript', 'lisp', 'php', 'python', 'rust', 'scheme', 'typescript' );
 		$known_rejects   = array( 'nil', 'src' );
 		$try_slug = function ( $trial ) use ( $language_map, $known_languages, $known_rejects ) {
-			if ( in_array( $trial, $known_rejects, true ) || in_array( $this->language, $known_languages, true ) ) {
+			if ( \in_array( $trial, $known_rejects, true ) || \in_array( $this->language, $known_languages, true ) ) {
 				return;
 			}
 
 			$trial = $language_map[ $trial ] ?? $trial;
-			if ( in_array( $trial, $known_languages, true ) ) {
+			if ( \in_array( $trial, $known_languages, true ) ) {
 				$this->language = $trial;
 				return;
 			}
@@ -60,14 +62,14 @@ class Block_Code extends Block {
 			case 'PRE':
 			case 'CODE':
 				$classes = $processor->get_attribute( 'class' );
-				if ( is_string( $classes ) ) {
-					foreach ( preg_split( "~[ \t\f\r\n]~", $classes ) as $class ) {
-						if ( str_starts_with( $class, 'language-' ) ) {
-							$try_slug( substr( $class, 9 ) );
+				if ( \is_string( $classes ) ) {
+					foreach ( \preg_split( "~[ \t\f\r\n]~", $classes ) as $class ) {
+						if ( \str_starts_with( $class, 'language-' ) ) {
+							$try_slug( \substr( $class, 9 ) );
 						}
 
-						if ( str_starts_with( $class, 'pre-' ) || str_starts_with( $class, 'src-' ) ) {
-							$try_slug( substr( $class, 4 ) );
+						if ( \str_starts_with( $class, 'pre-' ) || \str_starts_with( $class, 'src-' ) ) {
+							$try_slug( \substr( $class, 4 ) );
 							return;
 						}
 
@@ -87,19 +89,19 @@ class Block_Code extends Block {
 		$options->indent[] = '    ';
 
 		$slug                    = $this->language ?? $this->language_fallback ?? '';
-		$indent                  = implode( '', $options->indent );
-		$indent_length           = mb_strwidth( $indent );
+		$indent                  = \implode( '', $options->indent );
+		$indent_length           = \mb_strwidth( $indent );
 		$soft_limit              = $options->soft_line_wrap;
-		$options->soft_line_wrap = max( 1, $soft_limit - $indent_length );
+		$options->soft_line_wrap = \max( 1, $soft_limit - $indent_length );
 
 		$prefix = "{$indent}```{$slug}\n";
 		$buffer = '';
-		foreach ( explode( "\n", $this->code->raw_buffer() ) as $line ) {
+		foreach ( \explode( "\n", $this->code->raw_buffer() ) as $line ) {
 			$chunk             = "{$indent}{$line}\n";
-			$is_all_whitespace = strspn( $chunk, " \t\f\r\n" ) === strlen( $chunk );
+			$is_all_whitespace = \strspn( $chunk, " \t\f\r\n" ) === \strlen( $chunk );
 			$buffer           .= $is_all_whitespace ? "\n" : $chunk;
 		}
-		$buffer = trim( $buffer, "\n" );
+		$buffer = \trim( $buffer, "\n" );
 		$suffix = "\n{$indent}```\n";
 
 		$options->soft_line_wrap = $soft_limit;

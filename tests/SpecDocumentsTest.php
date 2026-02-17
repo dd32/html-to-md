@@ -1,5 +1,7 @@
 <?php
 
+namespace WordPress\Experiments\HtmlToMarkdown;
+
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
