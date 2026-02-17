@@ -33,4 +33,19 @@ class MD_Options {
 	 * @var 'syntax'|'presentation'
 	 */
 	public string $display_mode = 'syntax';
+
+	/**
+	 * How to respond when the HTML API is unable to properly parse the
+	 * input HTML. This occurs in rare circumstances with malformed markup.
+	 *
+	 * Callees may want to abort in the presence of parsing errors to call
+	 * an external parser which produces a well-formed version of the input,
+	 * which might involve higher costs.
+	 *
+	 * @todo Add 'reduced-fidelity' as default to fallback to Tag Processor
+	 *       with assumptions that the HTML is well-formed.
+	 *
+	 * @var 'abort'
+	 */
+	public string $recovery_mode = 'abort';
 }

@@ -42,39 +42,66 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 	 */
 	public static function data_spec_documents() {
 		foreach ( self::walk_spec_documents() as $full_html ) {
-			$dom = \DOM\HTMLDocument::createFromString( $full_html, LIBXML_NOERROR | LIBXML_HTML_NOIMPLIED );
-
-			foreach ( $dom->querySelectorAll( 'SECTION' ) as $section ) {
-				if ( null !== $section->querySelector( 'META' ) ) {
-					$options = new MD_Options();
-
-					// Handle display mode setting.
-					if ( null !== ( $meta = $section->querySelector( 'META[name=display-mode]' ) ) ) {
-						$display_mode = $meta->getAttribute( 'content' );
-						self::assertContains(
-							$display_mode,
-							array( 'syntax', 'presentation' ),
-							"Configured display mode must be either 'syntax' or 'presentation': check test fixture."
-						);
-						$options->display_mode = $display_mode;
-					}
-
-					// Handle soft linewrap setting.
-					if ( null !== ( $meta = $section->querySelector( 'META[name=soft-line-wrap]' ) ) ) {
-						$soft_limit = $meta->getAttribute( 'content' );
-						self::assertTrue(
-							ctype_digit( $soft_limit ),
-							"Configured soft line wrap value of '{$soft_limit}' must be all digits: check test fixture."
-						);
-						$options->soft_line_wrap = (int) $soft_limit;
-					}
-				} else {
-					$options = null;
+			$p = new class( $full_html ) extends \WP_HTML_Tag_Processor {
+				public function get_span(): \WP_Html_Span {
+					$this->set_bookmark( 'here' );
+					return $this->bookmarks['here'];
 				}
+			};
 
-				$test_name = $section->getAttribute( 'id' );
-				$test_html = $section->querySelector( 'PRE' )->innerHTML;
-				$test_md   = $section->querySelector( 'SCRIPT[type="text/x-markdown"]' )->textContent;
+			while ( $p->next_tag( 'SECTION' ) ) {
+				$test_name = $p->get_attribute( 'id' );
+				$options   = null;
+
+				while ( $p->next_tag() ) {
+					$token_name = $p->get_token_name();
+
+					switch ( $token_name ) {
+						case 'META':
+							switch ( $p->get_attribute( 'name' ) ) {
+								case 'display-mode':
+									$display_mode = $p->get_attribute( 'content' );
+									self::assertContains(
+										$display_mode,
+										array( 'syntax', 'presentation' ),
+										"Configured display mode must be either 'syntax' or 'presentation': check test fixture."
+									);
+									if ( ! isset( $options ) ) {
+										$options = new MD_Options();
+									}
+									$options->display_mode = $display_mode;
+									break;
+
+								case 'soft-line-wrap':
+									$soft_limit = $p->get_attribute( 'content' );
+									self::assertTrue(
+										ctype_digit( $soft_limit ),
+										"Configured soft line wrap value of '{$soft_limit}' must be all digits: check test fixture."
+									);
+									if ( ! isset( $options ) ) {
+										$options = new MD_Options();
+									}
+									$options->soft_line_wrap = (int) $soft_limit;
+									break;
+							}
+							break;
+
+						case 'PRE':
+							$start = $p->get_span();
+							while ( $p->next_token() && 'SCRIPT' !== $p->get_tag() && 'text/x-markdown' !== $p->get_attribute( 'type' ) ) {
+								$end = $p->get_span();
+							}
+
+							$start_at = $start->start + $start->length;
+							$start_at += strspn( $full_html, "\n", $start_at, 1 );
+							$test_html = substr( $full_html, $start_at, $end->start - $start_at );
+							$test_md   = $p->get_modifiable_text();
+							break 2;
+
+						default:
+							self::fail( 'Test fixture contains unexpected HTML structure.' );
+					}
+				}
 
 				// While PRE removes a leading newline, SCRIPT doesn’t.
 				if ( "\n" === ( $test_md[0] ?? null ) ) {

@@ -413,13 +413,23 @@ function html_to_md( string $html, ?MD_Options $options = new MD_Options() ) {
 		}
 	}
 
-	// Try again if parsing fails and it’s possible to recover it via the DOM.
-	if (
-		( $p->paused_at_incomplete_token() || null !== $p->get_last_error() ) &&
-		\class_exists( '\DOM\HTMLDocument' ) && \extension_loaded( 'libxml' )
-	) {
-		$dom = \DOM\HTMLDocument::createFromString( $html, LIBXML_NOERROR | LIBXML_HTML_NOIMPLIED );
-		return html_to_md( $dom->saveHTML(), $options );
+	// Handle parsing failures.
+	if ( $p->paused_at_incomplete_token() || null !== $p->get_last_error() ) {
+		switch ( $options->recovery_mode ) {
+			// @todo: Add default 'reduced-fidelity' mode continuing with Tag Processor.
+
+			case 'abort':
+			default:
+				/*
+				 * @todo Returning `null` would be a clearer signature, but also requiring
+				 *       typing the function as `?string`, and that calling code check the
+				 *       output for nullity. This could be resolved with different public
+				 *       interfaces that wrap the conditional response, for example, with
+				 *       `wp_html_to_markdown()` and `wp_try_html_to_markdown()`, but with
+				 *       better names.
+				 */
+				return '';
+		}
 	}
 
 	while ( \count( $stack ) > 0 ) {
