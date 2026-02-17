@@ -305,7 +305,7 @@ class WP_Experimental_HTML_Renderer {
 								? $bullets_syntax
 								: $bullets_presentational;
 							$style = $bullets_presentational[ $type ] ?? null;
-							$style = $style ?? \array_values( $bullets )[ $this->depths['UL'] % 5 ];
+							$style = $style ?? \array_values( $bullets )[ $this->depths['UL'] % \count( $bullets ) ];
 						} elseif ( 'OL' === $token_name ) {
 							$style = \in_array( $type, [ '1', 'a', 'A', 'i', 'I' ], true )
 								? $type
