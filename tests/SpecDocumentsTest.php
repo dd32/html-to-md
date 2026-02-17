@@ -47,6 +47,19 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 			foreach ( $dom->querySelectorAll( 'SECTION' ) as $section ) {
 				if ( null !== $section->querySelector( 'META' ) ) {
 					$options = new MD_Options();
+
+					// Handle display mode setting.
+					if ( null !== ( $meta = $section->querySelector( 'META[name=display-mode]' ) ) ) {
+						$display_mode = $meta->getAttribute( 'content' );
+						self::assertContains(
+							$display_mode,
+							array( 'syntax', 'presentation' ),
+							"Configured display mode must be either 'syntax' or 'presentation': check test fixture."
+						);
+						$options->display_mode = $display_mode;
+					}
+
+					// Handle soft linewrap setting.
 					if ( null !== ( $meta = $section->querySelector( 'META[name=soft-line-wrap]' ) ) ) {
 						$soft_limit = $meta->getAttribute( 'content' );
 						self::assertTrue(
