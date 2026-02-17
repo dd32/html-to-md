@@ -2,11 +2,11 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-class WP_Experimental_HTML_Renderer_Block_List extends WP_HTML_Renderer_Block {
+class WP_Experimental_HTML_Renderer_Block_List extends WP_Experimental_HTML_Renderer_Block {
 	private string $style;
 
 	/**
-	 * @var Array<WP_HTML_Renderer_Block>
+	 * @var Array<WP_Experimental_HTML_Renderer_Block>
 	 */
 	public array $items = array();
 
@@ -14,7 +14,7 @@ class WP_Experimental_HTML_Renderer_Block_List extends WP_HTML_Renderer_Block {
 		$this->style = $style;
 	}
 
-	public function append( WP_HTML_Renderer_Block $block ): void {
+	public function append( WP_Experimental_HTML_Renderer_Block $block ): void {
 		$this->items[] = $block;
 	}
 

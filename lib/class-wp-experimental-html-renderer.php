@@ -57,7 +57,7 @@ class WP_Experimental_HTML_Renderer {
 	/**
 	 * Tracks open block containers.
 	 *
-	 * @var Array<WP_HTML_Renderer_Block>
+	 * @var Array<WP_Experimental_HTML_Renderer_Block>
 	 */
 	private $stack = array();
 
@@ -392,7 +392,7 @@ class WP_Experimental_HTML_Renderer {
 		}
 
 		$parent = \end( $this->stack );
-		if ( $parent instanceof WP_HTML_Renderer_Block ) {
+		if ( $parent instanceof WP_Experimental_HTML_Renderer_Block ) {
 			$parent->append( $block );
 		} else {
 			if ( '' !== $this->output ) {

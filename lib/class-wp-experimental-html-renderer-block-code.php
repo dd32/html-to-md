@@ -2,7 +2,7 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-class WP_Experimental_HTML_Renderer_Block_Code extends WP_HTML_Renderer_Block {
+class WP_Experimental_HTML_Renderer_Block_Code extends WP_Experimental_HTML_Renderer_Block {
 	public ?WP_Experimental_HTML_Renderer_Line_Buffer $code = null;
 
 	public ?string $language = null;
@@ -13,7 +13,7 @@ class WP_Experimental_HTML_Renderer_Block_Code extends WP_HTML_Renderer_Block {
 		$this->code = $line;
 	}
 
-	public function append( WP_HTML_Renderer_Block $block ): void {
+	public function append( WP_Experimental_HTML_Renderer_Block $block ): void {
 		if ( $block instanceof WP_Experimental_HTML_Renderer_Block_Paragraph ) {
 			$this->code = $block->lines[0] ?? null;
 		} else {

@@ -2,13 +2,13 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-class WP_Experimental_HTML_Renderer_Block_Blockquote extends WP_HTML_Renderer_Block {
+class WP_Experimental_HTML_Renderer_Block_Blockquote extends WP_Experimental_HTML_Renderer_Block {
 	/**
-	 * @var Array<WP_HTML_Renderer_Block>
+	 * @var Array<WP_Experimental_HTML_Renderer_Block>
 	 */
 	public array $items = array();
 
-	public function append( WP_HTML_Renderer_Block $block ): void {
+	public function append( WP_Experimental_HTML_Renderer_Block $block ): void {
 		$this->items[] = $block;
 	}
 

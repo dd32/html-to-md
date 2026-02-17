@@ -2,8 +2,8 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-abstract class WP_HTML_Renderer_Block {
-	public function append( WP_HTML_Renderer_Block $block ): void {
+abstract class WP_Experimental_HTML_Renderer_Block {
+	public function append( WP_Experimental_HTML_Renderer_Block $block ): void {
 		$type = \strtr( \get_class( $this ), array( 'Block_' => '' ) );
 		throw new \Error( "Cannot add blocks inside of block type '{$type}'" );
 	}

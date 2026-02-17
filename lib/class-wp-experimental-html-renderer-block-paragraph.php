@@ -2,7 +2,7 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-class WP_Experimental_HTML_Renderer_Block_Paragraph extends WP_HTML_Renderer_Block {
+class WP_Experimental_HTML_Renderer_Block_Paragraph extends WP_Experimental_HTML_Renderer_Block {
 	/**
 	 * @var Array<WP_Experimental_HTML_Renderer_Line_Buffer>
 	 */
