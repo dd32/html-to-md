@@ -1,5 +1,6 @@
 <?php
 
+require __DIR__ . '/../deps/polyfill/wordpress.php';
 require __DIR__ . '/line-wrap.php';
 require __DIR__ . '/class-md-options.php';
 require __DIR__ . '/block.php';
