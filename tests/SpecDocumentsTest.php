@@ -18,8 +18,8 @@ class SpecDocumentsTest extends \PhpUnit\Framework\TestCase {
 		$this->assertSame(
 			self::visualize_invisibles( $markdown ),
 			self::visualize_invisibles( isset( $options )
-				? html_to_md( $html, $options )
-				: html_to_md( $html ) )
+				? \wp_html_to_markdown( $html, $options )
+				: \wp_html_to_markdown( $html ) )
 		);
 	}
 

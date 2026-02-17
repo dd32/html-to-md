@@ -2,21 +2,6 @@
 
 namespace WordPress\Experiments\HtmlToMarkdown;
 
-require __DIR__ . '/../deps/polyfill/wordpress.php';
-require __DIR__ . '/line-wrap.php';
-require __DIR__ . '/class-md-options.php';
-require __DIR__ . '/block.php';
-require __DIR__ . '/block-atx.php';
-require __DIR__ . '/block-blockquote.php';
-require __DIR__ . '/block-code.php';
-require __DIR__ . '/block-list.php';
-require __DIR__ . '/block-paragraph.php';
-require __DIR__ . '/inline-format.php';
-require __DIR__ . '/inline-format-generic.php';
-require __DIR__ . '/inline-format-image.php';
-require __DIR__ . '/inline-format-link.php';
-require __DIR__ . '/line-buffer.php';
-
 /**
  * Render an HTML document into Markdown.
  *
