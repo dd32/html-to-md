@@ -23,4 +23,23 @@ class WP_Experimental_HTML_Renderer_Format_Generic extends WP_Experimental_HTML_
 	public function __construct( string $type ) {
 		$this->type = $type;
 	}
+
+	public static function from_html_tag( string $tag_name ): ?self {
+		$format = array(
+			'B'      => 'bolding',
+			'BR'     => 'newlining',
+			'CODE'   => 'monospacing',
+			'EM'     => 'emphasizing',
+			'I'      => 'emphasizing',
+			'Q'      => 'quoting',
+			'S'      => 'striking-out',
+			'STRONG' => 'bolding',
+			'SUB'    => 'subscripting',
+			'SUP'    => 'superscripting',
+		)[ $tag_name ] ?? null;
+
+		return isset( $format )
+			? new WP_Experimental_HTML_Renderer_Format_Generic( $format )
+			: null;
+	}
 }

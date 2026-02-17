@@ -61,20 +61,22 @@ class WP_Experimental_HTML_Renderer_Block_Code extends WP_Experimental_HTML_Rend
 		switch ( $processor->get_token_name() ) {
 			case 'PRE':
 			case 'CODE':
-				$classes = $processor->get_attribute( 'class' );
-				if ( \is_string( $classes ) ) {
-					foreach ( \preg_split( "~[ \t\f\r\n]~", $classes ) as $class ) {
-						if ( \str_starts_with( $class, 'language-' ) ) {
-							$try_slug( \substr( $class, 9 ) );
-						}
+				$class_list = $processor->class_list();
+				if ( ! isset( $class_list ) ) {
+					break;
+				}
 
-						if ( \str_starts_with( $class, 'pre-' ) || \str_starts_with( $class, 'src-' ) ) {
-							$try_slug( \substr( $class, 4 ) );
-							return;
-						}
-
-						$try_slug( $class );
+				foreach ( $processor->class_list() as $class ) {
+					if ( \str_starts_with( $class, 'language-' ) ) {
+						$try_slug( \substr( $class, 9 ) );
 					}
+
+					if ( \str_starts_with( $class, 'pre-' ) || \str_starts_with( $class, 'src-' ) ) {
+						$try_slug( \substr( $class, 4 ) );
+						return;
+					}
+
+					$try_slug( $class );
 				}
 				break;
 		}

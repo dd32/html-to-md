@@ -137,19 +137,11 @@ class WP_Experimental_HTML_Renderer {
 						if ( 'CODE' === $token_name && $this->innermost_block() instanceof WP_Experimental_HTML_Renderer_Block_Code ) {
 							$this->innermost_block()->infer_language( $p );
 						}
-						$format = array(
-							'B'      => 'bolding',
-							'BR'     => 'newlining',
-							'CODE'   => 'monospacing',
-							'EM'     => 'emphasizing',
-							'I'      => 'emphasizing',
-							'Q'      => 'quoting',
-							'S'      => 'striking-out',
-							'STRONG' => 'bolding',
-							'SUB'    => 'subscripting',
-							'SUP'    => 'superscripting',
-						)[ $token_name ];
-						$this->line_buffer->require_format( new WP_Experimental_HTML_Renderer_Format_Generic( $format ) );
+
+						$format = WP_Experimental_HTML_Renderer_Format_Generic::from_html_tag( $token_name );
+						if ( isset( $format ) ) {
+							$this->line_buffer->require_format( $format );
+						}
 					}
 					break;
 
