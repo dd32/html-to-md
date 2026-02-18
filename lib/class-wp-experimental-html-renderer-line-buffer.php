@@ -66,8 +66,12 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 
 	public function release_format() {
 		$this->format_offsets[] = -\strlen( $this->buffer );
+
+		/*
+		 * Sometimes, the line buffer has been replaced by the time that the
+		 * format is released. What could cause this to happen?
+		 */
 //		assert( count( $this->open_formats ) > 0 );
-		// @todo how could this be missing?
 		$this->format_indices[] = \array_pop( $this->open_formats );
 	}
 
@@ -120,6 +124,16 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 			}
 
 			$format = $formats[ $index ];
+
+			/*
+			 * Some formats “disappear” because they are not applicable, such as
+			 * nested bolding or URLs which cannot be represented. When these are
+			 * skipped, they unset the format itself, meaning that null formats
+			 * at this point should be skipped as if they don’t exist.
+			 */
+			if ( ! isset( $format ) ) {
+				goto next;
+			}
 
 			if ( $at > $was_at ) {
 				$chunk   = \substr( $this->buffer, $was_at, $at - $was_at );
@@ -180,6 +194,7 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 					! \str_starts_with( $url, 'http://' ) &&
 					! \str_starts_with( $url, 'https://' )
 				) {
+					$formats[ $index ] = null;
 					goto next;
 				}
 
@@ -210,6 +225,7 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 				}
 
 				if ( '' === $format->alt_text || 'exiting' === $state ) {
+					$formats[ $index ] = null;
 					goto next;
 				}
 

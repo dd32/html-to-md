@@ -117,6 +117,15 @@ class WP_Experimental_HTML_Renderer {
 					}
 					break;
 
+				case 'META':
+					if ( 'og:url' === $p->get_attribute( 'property' ) && ! isset( $this->options->base_url ) ) {
+						$this->options->base_url = $p->get_attribute( 'content' );
+						if ( true === $this->options->base_url ) {
+							$this->options->base_url = null;
+						}
+					}
+					break;
+
 				case 'A':
 					// @todo Join with base URL of document, if available, to form URL.
 					if ( $is_closer ) {
