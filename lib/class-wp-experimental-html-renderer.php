@@ -81,6 +81,8 @@ class WP_Experimental_HTML_Renderer {
 		}
 		$main_depth = $p->get_current_depth();
 
+		$base_url_confidence = isset( $this->options->base_url ) ? PHP_INT_MAX : 0;
+
 		while ( $p->get_current_depth() >= $main_depth && $p->next_token() ) {
 			$token_name = $p->get_token_name();
 			$is_closer  = $p->is_tag_closer();
@@ -109,19 +111,23 @@ class WP_Experimental_HTML_Renderer {
 					break;
 
 				case 'LINK':
-					if ( 'canonical' === $p->get_attribute( 'rel' ) && ! isset( $this->options->base_url ) ) {
+					if ( $base_url_confidence < 2 && 'canonical' === $p->get_attribute( 'rel' ) ) {
 						$this->options->base_url = $p->get_attribute( 'href' );
 						if ( true === $this->options->base_url ) {
 							$this->options->base_url = null;
+						} else {
+							$base_url_confidence = 2;
 						}
 					}
 					break;
 
 				case 'META':
-					if ( 'og:url' === $p->get_attribute( 'property' ) && ! isset( $this->options->base_url ) ) {
+					if ( $base_url_confidence < 1 && 'og:url' === $p->get_attribute( 'property' ) ) {
 						$this->options->base_url = $p->get_attribute( 'content' );
 						if ( true === $this->options->base_url ) {
 							$this->options->base_url = null;
+						} else {
+							$base_url_confidence = 1;
 						}
 					}
 					break;
