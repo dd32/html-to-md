@@ -74,7 +74,7 @@ function line_wrap( string $text, int $soft_limit ): array {
 		}
 
 		// If it sticks out a little, append it, otherwise start a new line.
-		if ( ( $chunk_width / $width_remaining ) < $fractional_soft_limit_ratio ) {
+		if ( ( $chunk_width / max( 1, $width_remaining ) ) < $fractional_soft_limit_ratio ) {
 			$line_length += $chunk_width;
 			continue;
 		}
