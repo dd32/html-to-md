@@ -11,6 +11,8 @@
  * License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
+use WordPress\Experiments\HtmlToMarkdown\WP_Experimental_HTML_Renderer_Options;
+
 // Don’t load directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
@@ -90,7 +92,9 @@ add_action( 'init', function () {
 				$frontmatter .= "\n---\n\n";
 			}
 
-			$markdown = wp_html_to_markdown( $output );
+			$options           = new WP_Experimental_HTML_Renderer_Options();
+			$options->base_url = rtrim( home_url( '/' ), '/' ) . $_SERVER['REQUEST_URI'];
+			$markdown          = wp_html_to_markdown( $output, $options );
 
 			return "{$frontmatter}{$markdown}";
 		},
