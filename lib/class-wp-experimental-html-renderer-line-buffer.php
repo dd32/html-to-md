@@ -204,9 +204,9 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 				}
 
 				if ( 'entering' === $state ) {
-					$buffer .= '[';
+					$buffer .= "\u{E0001}[";
 				} else {
-					$buffer .= "]({$url})";
+					$buffer .= "]({$url})\u{E007F}";
 				}
 			}
 

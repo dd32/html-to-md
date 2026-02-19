@@ -12,12 +12,48 @@ function line_wrap( string $text, int $soft_limit ): array {
 	$line_length = 0;
 	$was_at      = 0;
 
+	// Determine non-wrappable regions.
+	$at    = 0;
+	$end   = \strlen( $text );
+	$nobrs = array();
+	$delta = 0;
+	while ( $at < $end ) {
+		$nobr_at = \strpos( $text, "\u{E0001}", $at );
+		if ( false === $nobr_at ) {
+			break;
+		}
+
+		$at = \strpos( $text, "\u{E007F}", $nobr_at );
+		// Given the bug with formats closing unexpectedly, there may be no closer.
+//		assert( false !== $at );
+		if ( false === $at ) {
+			$next_br_at = strpos( $text, "\u{E0001}", $nobr_at + 1 );
+
+			// This length value is arbitrarily chosen. This is already a degenerate case.
+			$at = false === $next_br_at ? ( $nobr_at + 20 ) : min( $nobr_at + 20, $next_br_at );
+		}
+		$nobrs[] = array( $nobr_at - $delta, $at - $delta - 4 );
+		$delta += 8;
+	}
+	$nobr = \array_shift( $nobrs );
+	$text = str_replace( array( "\u{E0001}", "\u{E007F}" ), '', $text );
+
 	$bi->setText( $text );
 
 	foreach ( $pi as $part ) {
 		$offset          = $bi->current();
 		$chunk_width     = \mb_strwidth( $part );
 		$width_remaining = $soft_limit - $line_length;
+
+		if ( $nobr && $offset >= $nobr[1] ) {
+			$nobr = \array_shift( $nobrs );
+		}
+
+		$is_unbreakable = $nobr && $offset > $nobr[0] && $offset <= $nobr[1];
+		if ( $is_unbreakable ) {
+			$line_length += $chunk_width;
+			continue;
+		}
 
 		// Add trailing non-word content to the previous line.
 		if (
