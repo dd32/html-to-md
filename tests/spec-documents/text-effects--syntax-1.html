@@ -1,3 +1,13 @@
+<section id="ignored links still render plaintext">
+<pre><a href="#nowhere">link</a></pre>
+<script type="text/x-markdown">link</script>
+</section>
+
+<section id="ignored links in code still render plaintext">
+<pre><code><a href="#nowhere">link</a></code></pre>
+<script type="text/x-markdown">`link`</script>
+</section>
+
 <section id="links do not wrap: break before link">
 <meta name="soft-line-wrap" content="5">
 <pre>click <a href="https://example.com">here to win</a>.</pre>

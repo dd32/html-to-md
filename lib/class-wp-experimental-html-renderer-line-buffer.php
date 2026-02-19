@@ -130,16 +130,6 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 
 			$format = $formats[ $index ];
 
-			/*
-			 * Some formats “disappear” because they are not applicable, such as
-			 * nested bolding or URLs which cannot be represented. When these are
-			 * skipped, they unset the format itself, meaning that null formats
-			 * at this point should be skipped as if they don’t exist.
-			 */
-			if ( ! isset( $format ) ) {
-				goto next;
-			}
-
 			if ( $at > $was_at ) {
 				$chunk   = \substr( $this->buffer, $was_at, $at - $was_at );
 				foreach ( $effects as $effect => $depth ) {
