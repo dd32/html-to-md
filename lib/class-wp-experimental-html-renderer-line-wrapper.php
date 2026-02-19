@@ -60,7 +60,7 @@ function line_wrap( string $text, int $soft_limit ): array {
 			0 === $line_length &&
 			\IntlBreakIterator::WORD_NONE === $bi->getRuleStatus() &&
 			\count( $lines ) > 0 &&
-			1 === \preg_match( '~\A[\p{C}\p{P}\p{Z}]*\Z~u', $part )
+			1 === \preg_match( '~\A[`*_\p{C}\p{P}\p{Z}]*\Z~u', $part )
 		) {
 			$lines[ count( $lines ) - 1 ] .= \preg_replace( '~\p{Z}+\Z~u', '', $part );
 			$was_at = $offset;
