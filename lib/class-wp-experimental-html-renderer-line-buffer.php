@@ -42,6 +42,8 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 
 	private array $open_formats = array();
 
+	private bool $contains_non_whitespace = false;
+
 	/**
 	 * References to inline formats and their state.
 	 *
@@ -54,6 +56,9 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 
 	public function append_text( string $text ) {
 		$this->buffer .= $text;
+		if ( ! $this->contains_non_whitespace ) {
+			$this->contains_non_whitespace = \strspn( $text, " \t\n" ) !== \strlen( $text );
+		}
 	}
 
 	public function require_format( WP_Experimental_HTML_Renderer_Format $format ) {
@@ -248,7 +253,7 @@ class WP_Experimental_HTML_Renderer_Line_Buffer {
 	}
 
 	public function has_non_whitespace_content(): bool {
-		if ( \strspn( $this->buffer, " \t\f" ) !== \strlen( $this->buffer ) ) {
+		if ( $this->contains_non_whitespace ) {
 			return true;
 		}
 
