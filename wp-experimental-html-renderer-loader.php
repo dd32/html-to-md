@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/deps/polyfill/wordpress.php';
+require __DIR__ . '/deps/Polyfill/wordpress.php';
 require __DIR__ . '/lib/class-wp-experimental-html-renderer-options.php';
 require __DIR__ . '/lib/class-wp-experimental-html-renderer-block.php';
 require __DIR__ . '/lib/class-wp-experimental-html-renderer-block-atx.php';

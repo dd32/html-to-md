@@ -2,10 +2,13 @@
 
 /*
  * Plugin Name: HTML to Markdown
- * Author: Dennis Snell <dmsnell@git.wordpress.org>, Weston Ruter <westonruter@git.wordpress.org>, Jeremy Herve <jeherve@git.wordpress.org>
+ * Plugin URI: https://github.com/dmsnell/html-to-md
+ * Author: WordPress Core Team
  * Description: Convert HTML documents to Markdown using WordPress’ HTML API.
- * Version: 2026-02-01
+ * Version: 2026.02.18
  * Requires at least: 6.9
+ * License: GPLv2
+ * License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
 // Don’t load directly.
@@ -13,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
 }
 
+require_once __DIR__ . '/wp-experimental-html-renderer-loader.php';
 require_once __DIR__ . '/wp-html-to-markdown.php';
 
 add_filter( 'html_to_markdown_starting_node_finder', fn ( $prev ) =>
