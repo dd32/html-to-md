@@ -53,10 +53,16 @@ add_action( 'init', function () {
 
 	add_filter(
 		'wp_template_enhancement_output_buffer',
-		function ( $output ) use ( $has_markdown_type ) {
+		function ( $output ) use ( $has_markdown_type, $has_markdown_query_arg ) {
 			header( 'Content-type: text/markdown; charset=utf-8' );
 			if ( $has_markdown_type ) {
 				header( 'Vary: Accept' );
+			}
+			if ( $has_markdown_query_arg ) {
+				header( sprintf(
+					'Link: <%s>; rel="canonical"',
+					remove_query_arg( 'output_format', home_url('/') . substr( $_SERVER['REQUEST_URI'], strlen( wp_parse_url( home_url('/'), PHP_URL_PATH ) ) ) )
+				), false );
 			}
 
 			$title        = '';
