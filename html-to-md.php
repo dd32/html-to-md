@@ -65,9 +65,12 @@ add_action( 'init', function () {
 			$modified_on  = '';
 			if ( is_singular() ) {
 				$title        = get_the_title();
-				$author       = get_the_author_meta( 'display_name' );
 				$published_on = get_the_date();
 				$modified_on  = get_the_modified_date();
+
+				if ( post_type_supports( get_post()->post_type ?? '', 'author' ) ) {
+					$author = get_the_author_meta( 'display_name' );
+				}
 			} else {
 				$title_finder = new WP_HTML_Tag_Processor( $output );
 				if ( $title_finder->next_tag( 'title' ) ) {
