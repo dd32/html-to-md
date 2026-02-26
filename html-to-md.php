@@ -61,7 +61,7 @@ add_action( 'init', function () {
 			if ( $has_markdown_query_arg ) {
 				header( sprintf(
 					'Link: <%s>; rel="canonical"',
-					remove_query_arg( 'output_format', home_url('/') . substr( $_SERVER['REQUEST_URI'], strlen( wp_parse_url( home_url('/'), PHP_URL_PATH ) ) ) )
+					remove_query_arg( 'output_format', home_url('/') . substr( wp_unslash( $_SERVER['REQUEST_URI'] ), strlen( wp_parse_url( home_url('/'), PHP_URL_PATH ) ) ) )
 				), false );
 			}
 
