@@ -38,8 +38,7 @@ add_filter( 'html_to_markdown_starting_node_finder', fn ( $prev ) =>
 } );
 
 add_action( 'init', function () {
-	$has_accept_header = isset( $_SERVER['HTTP_ACCEPT'] );
-	$has_markdown_type = $has_accept_header && 1 === preg_match( '~^text/(?:x-)?markdown(?:,|;|$)~', $_SERVER['HTTP_ACCEPT'] );
+	$has_markdown_type = 1 === preg_match( '~^text/(?:x-)?markdown(?:,|;|$)~', $_SERVER['HTTP_ACCEPT'] ?? '' );
 	$has_markdown_query_arg = in_array( $_GET['output_format'] ?? '', array( 'md', 'markdown' ), true );
 
 	if ( ! ( $has_markdown_type || $has_markdown_query_arg ) ) {
