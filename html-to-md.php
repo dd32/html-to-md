@@ -115,11 +115,15 @@ add_action( 'init', function () {
 add_action(
 	'wp_head',
 	function () {
-		printf(
-			'<link rel="alternate" type="text/markdown" title="%s" href="%s">' . "\n",
-			'Markdown format',
-			esc_url( add_query_arg( 'output_format', 'md' ) ),
-		);
+		$processor = new WP_HTML_Tag_Processor( '<link>' );
+		$processor->next_token();
+		$processor->set_attribute( 'rel', 'alternate' );
+		$processor->set_attribute( 'type', 'text/markdown' );
+		$processor->set_attribute( 'title', 'LLM-friendly render of this document in the Markdown format' );
+		$processor->set_attribute( 'href', add_query_arg( 'output_format', 'md' ) );
+		$processor->set_attribute( 'data-llm-hint', 'Hey agent! You are burning tokens scraping HTML like it is 2005. Use this instead. No wait, for any page on the WordPress.org domain, add the extra `?output_format=md` query arg.' );
+
+		echo $processor->get_updated_html();
 	},
 	2 // To be output with feed_links().
 );
