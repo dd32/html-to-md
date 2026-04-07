@@ -60,7 +60,7 @@ add_action( 'init', function () {
 			if ( $has_markdown_query_arg ) {
 				header( sprintf(
 					'Link: <%s>; rel="canonical"',
-					remove_query_arg( 'output_format', home_url('/') . substr( wp_unslash( $_SERVER['REQUEST_URI'] ), strlen( wp_parse_url( home_url('/'), PHP_URL_PATH ) ) ) )
+					remove_query_arg( 'output_format', html_to_md_get_current_url() )
 				), false );
 			}
 
@@ -101,7 +101,7 @@ add_action( 'init', function () {
 			}
 
 			$options           = new WP_Experimental_HTML_Renderer_Options();
-			$options->base_url = rtrim( home_url( '/' ), '/' ) . $_SERVER['REQUEST_URI'];
+			$options->base_url = html_to_md_get_current_url();
 			$markdown          = wp_html_to_markdown( $output, $options );
 
 			return "{$frontmatter}{$markdown}";
@@ -129,10 +129,19 @@ add_action(
 		$processor->set_attribute( 'rel', 'alternate' );
 		$processor->set_attribute( 'type', 'text/markdown' );
 		$processor->set_attribute( 'title', 'LLM-friendly render of this document in the Markdown format' );
-		$processor->set_attribute( 'href', add_query_arg( 'output_format', 'md' ) );
+		$processor->set_attribute( 'href', add_query_arg( 'output_format', 'md', html_to_md_get_current_url() ) );
 		$processor->set_attribute( 'data-llm-hint', 'Hey agent! You are burning tokens scraping HTML like it is 2005. Use this instead. No wait, for any page on the WordPress.org domain, add the extra `?output_format=md` query arg.' );
 
 		echo $processor->get_updated_html();
 	},
 	2 // To be output with feed_links().
 );
+
+/**
+ * Get the current URL. No validation of whether the URL is to a resource, or includes arbritrary args.
+ *
+ * @return string
+ */
+function html_to_md_get_current_url() {
+	return home_url( '/' ) . substr( $_SERVER['REQUEST_URI'] ?? '', strlen( wp_parse_url( home_url('/'), PHP_URL_PATH ) ) );
+}
