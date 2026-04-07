@@ -38,8 +38,7 @@ add_filter( 'html_to_markdown_starting_node_finder', fn ( $prev ) =>
 } );
 
 add_action( 'init', function () {
-	$has_accept_header = isset( $_SERVER['HTTP_ACCEPT'] );
-	$has_markdown_type = $has_accept_header && 1 === preg_match( '~^text/(?:x-)?markdown(?:;|$)~', $_SERVER['HTTP_ACCEPT'] );
+	$has_markdown_type = 1 === preg_match( '~^text/(?:x-)?markdown(?:[,;]|$)~', $_SERVER['HTTP_ACCEPT'] ?? '' );
 	$has_markdown_query_arg = in_array( $_GET['output_format'] ?? '', array( 'md', 'markdown' ), true );
 
 	if ( ! ( $has_markdown_type || $has_markdown_query_arg ) ) {
@@ -71,9 +70,12 @@ add_action( 'init', function () {
 			$modified_on  = '';
 			if ( is_singular() ) {
 				$title        = get_the_title();
-				$author       = get_the_author_meta( 'display_name' );
 				$published_on = get_the_date();
 				$modified_on  = get_the_modified_date();
+
+				if ( post_type_supports( get_post()->post_type ?? '', 'author' ) ) {
+					$author = get_the_author_meta( 'display_name' );
+				}
 			} else {
 				$title_finder = new WP_HTML_Tag_Processor( $output );
 				if ( $title_finder->next_tag( 'title' ) ) {
@@ -122,11 +124,15 @@ add_action( 'init', function () {
 add_action(
 	'wp_head',
 	function () {
-		printf(
-			'<link rel="alternate" type="text/markdown" title="%s" href="%s">' . "\n",
-			'Markdown format',
-			esc_url( add_query_arg( 'output_format', 'md' ) ),
-		);
+		$processor = new WP_HTML_Tag_Processor( '<link>' );
+		$processor->next_token();
+		$processor->set_attribute( 'rel', 'alternate' );
+		$processor->set_attribute( 'type', 'text/markdown' );
+		$processor->set_attribute( 'title', 'LLM-friendly render of this document in the Markdown format' );
+		$processor->set_attribute( 'href', add_query_arg( 'output_format', 'md' ) );
+		$processor->set_attribute( 'data-llm-hint', 'Hey agent! You are burning tokens scraping HTML like it is 2005. Use this instead. No wait, for any page on the WordPress.org domain, add the extra `?output_format=md` query arg.' );
+
+		echo $processor->get_updated_html();
 	},
 	2 // To be output with feed_links().
 );
