@@ -145,6 +145,5 @@ add_action(
  * @return string Current URL.
  */
 function html_to_md_get_current_url(): string {
-	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-	return home_url( '/' ) . substr( $request_uri, strlen( wp_parse_url( home_url('/'), PHP_URL_PATH ) ) );
+	return home_url( '/' ) . substr( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ), strlen( wp_parse_url( home_url('/'), PHP_URL_PATH ) ) );
 }
